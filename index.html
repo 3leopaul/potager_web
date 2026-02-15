@@ -642,6 +642,25 @@
 
         import { gsap } from 'https://cdn.skypack.dev/gsap';
 
+        // Track drag to prevent click after pan/orbit
+        let pointerDownPos = { x: 0, y: 0 };
+        const DRAG_THRESHOLD = 5; // pixels
+
+        window.addEventListener('mousedown', (e) => {
+            pointerDownPos = { x: e.clientX, y: e.clientY };
+        });
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                pointerDownPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        });
+
+        function wasDragged(endX, endY) {
+            const dx = endX - pointerDownPos.x;
+            const dy = endY - pointerDownPos.y;
+            return Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD;
+        }
+
         window.addEventListener('click', onMouseClick);
         window.addEventListener('mousemove', onMouseMove);
 
@@ -651,6 +670,10 @@
         function onTouchEnd(event) {
             if (event.touches.length > 0) return;
             const touch = event.changedTouches[0];
+
+            // Ignore if it was a drag/pan gesture
+            if (wasDragged(touch.clientX, touch.clientY)) return;
+
             mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
@@ -701,6 +724,8 @@
         function onMouseClick(event) {
             // Ignore clicks on UI elements (only react to canvas clicks)
             if (event.target !== renderer.domElement) return;
+            // Ignore if it was a drag/pan gesture
+            if (wasDragged(event.clientX, event.clientY)) return;
             if (currentZoomedBed) return; // If already zoomed, ignore click (use back button)
 
             raycaster.setFromCamera(mouse, camera);
