@@ -82,7 +82,7 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
-        const gardenBeds = []; // This array will hold your interactable boxes
+        const gardenBeds = []; // This array will hold your interactable hitboxes
 
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
@@ -102,18 +102,17 @@
                         child.castShadow = true;
                         child.receiveShadow = true;
 
-                        // CHECK: Is this a garden box?
-                        // Make sure your Blender names match this string!
-                        if (child.name.includes('GardenBox')) {
-
-                            // Clone material so each box can be highlighted independently
-                            child.material = child.material.clone();
+                        // CHECK: Is this a HitBox?
+                        if (child.name.includes('HitBox')) {
+                            // Make hitbox invisible but keep it for raycasting
+                            child.material = new THREE.MeshBasicMaterial({
+                                transparent: true,
+                                opacity: 0,
+                                depthWrite: false,
+                            });
 
                             // Add to our interactable list
                             gardenBeds.push(child);
-
-                            // Store original color for the hover effect
-                            child.userData.originalColor = child.material.color.getHex();
                             child.userData.isBed = true;
                         }
                     }
@@ -136,6 +135,8 @@
         window.addEventListener('click', onMouseClick);
         window.addEventListener('mousemove', onMouseMove);
 
+        let currentOutline = null; // Track the current outline mesh
+
         function onMouseMove(event) {
             // Calculate mouse position
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -147,12 +148,28 @@
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(gardenBeds);
 
-            // Reset all beds to brown
-            gardenBeds.forEach(b => b.material.color.setHex(b.userData.originalColor));
+            // Remove previous outline
+            if (currentOutline) {
+                currentOutline.parent.remove(currentOutline);
+                currentOutline.geometry.dispose();
+                currentOutline.material.dispose();
+                currentOutline = null;
+            }
 
             if (intersects.length > 0) {
-                // Highlight hovered bed
-                intersects[0].object.material.color.setHex(0xffd700);
+                const hoveredBed = intersects[0].object;
+
+                // Create white outline from the mesh edges
+                const edges = new THREE.EdgesGeometry(hoveredBed.geometry, 15);
+                const outlineMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+                currentOutline = new THREE.LineSegments(edges, outlineMat);
+
+                // Match the bed's transform
+                currentOutline.position.copy(hoveredBed.position);
+                currentOutline.rotation.copy(hoveredBed.rotation);
+                currentOutline.scale.copy(hoveredBed.scale);
+                hoveredBed.parent.add(currentOutline);
+
                 document.body.style.cursor = 'pointer';
             } else {
                 document.body.style.cursor = 'default';
