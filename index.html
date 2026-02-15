@@ -36,9 +36,9 @@
 <body>
 
     <div id="ui-layer">
-        <h1>Garden Planner Demo</h1>
-        <p>Click on a garden bed to inspect it.</p>
-        <button id="back-btn" onclick="resetView()">← Back to Overview</button>
+        <h1 id="title">Le Potager</h1>
+        <p id="instruction">Clickez sur un objet pour le voir de plus près.</p>
+        <button id="back-btn" onclick="resetView()">←</button>
     </div>
 
     <script type="importmap">
@@ -218,9 +218,10 @@
                 duration: 1.5,
                 onUpdate: () => camera.lookAt(startLook.x, startLook.y, startLook.z),
                 onComplete: () => {
-                    // Show UI for this bed
+                    // Hide title and instruction, show back button
+                    document.getElementById('title').style.display = 'none';
+                    document.getElementById('instruction').style.display = 'none';
                     document.getElementById('back-btn').style.display = 'block';
-                    // Here you would trigger your "Dynamic Planting" UI
                     console.log(`Zoomed into Bed #${bed.userData.id}`);
                 }
             });
@@ -230,6 +231,8 @@
         window.resetView = function () {
             currentZoomedBed = null;
             document.getElementById('back-btn').style.display = 'none';
+            document.getElementById('title').style.display = 'block';
+            document.getElementById('instruction').style.display = 'block';
 
             // Animate back to overview
             gsap.to(camera.position, {
