@@ -90,7 +90,7 @@
         const loader = new GLTFLoader();
         loader.setDRACOLoader(dracoLoader);
         loader.load(
-            '3dModels/potager.glb', // Make sure this path is correct relative to your HTML file
+            './3dModels/potager.glb', // Make sure this path is correct relative to your HTML file
             function (gltf) {
                 const model = gltf.scene;
                 scene.add(model);
