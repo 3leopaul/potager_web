@@ -23,12 +23,18 @@
             pointer-events: auto;
             background: white;
             color: black;
-            border: none;
-            padding: 10px 20px;
+            border: 2px solid black;
+            padding: 16px 32px;
             cursor: pointer;
             display: none;
             font-weight: bold;
-            border-radius: 5px;
+            font-size: 24px;
+            border-radius: 10px;
+        }
+
+        #back-btn:hover {
+            background: black;
+            color: white;
         }
     </style>
 </head>
@@ -65,6 +71,15 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        // Orbit Controls — left-click: rotate, scroll: zoom, right-click: pan
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.target.set(0, 0, 0);
+        controls.minDistance = 5;
+        controls.maxDistance = 80;
+        controls.maxPolarAngle = Math.PI / 2.1; // Prevent going below ground
+
         // Lights
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
@@ -90,7 +105,7 @@
         const loader = new GLTFLoader();
         loader.setDRACOLoader(dracoLoader);
         loader.load(
-            '3dModels/potager.glb', // Make sure this path is correct relative to your HTML file
+            './3dModels/potager.glb', // Make sure this path is correct relative to your HTML file
             function (gltf) {
                 const model = gltf.scene;
                 scene.add(model);
@@ -177,6 +192,8 @@
         }
 
         function onMouseClick(event) {
+            // Ignore clicks on UI elements (only react to canvas clicks)
+            if (event.target !== renderer.domElement) return;
             if (currentZoomedBed) return; // If already zoomed, ignore click (use back button)
 
             raycaster.setFromCamera(mouse, camera);
@@ -197,6 +214,9 @@
                 z: bed.position.z + 2  // Offset back
             };
 
+            // Disable controls during animation
+            controls.enabled = false;
+
             // Animate Camera Position
             gsap.to(camera.position, {
                 x: targetPos.x, y: targetPos.y, z: targetPos.z,
@@ -204,24 +224,17 @@
                 ease: "power2.inOut"
             });
 
-            // Animate Camera LookAt (We use a dummy object to tween the controls target if using OrbitControls, 
-            // but for raw camera we tween rotation or lookAt. Here we just tween position and update LookAt in render loop 
-            // roughly, or better yet, tween the controls target if we had them. 
-            // For simplicity, we will lock the camera to look at the bed center.)
-
-            // Simple approach: Tween a 'lookAt' vector
-            const startLook = { x: 0, y: 0, z: 0 }; // Current center
-            const endLook = { x: bed.position.x, y: bed.position.y, z: bed.position.z };
-
-            gsap.to(startLook, {
-                x: endLook.x, y: endLook.y, z: endLook.z,
+            // Animate controls target to look at the bed
+            gsap.to(controls.target, {
+                x: bed.position.x, y: bed.position.y, z: bed.position.z,
                 duration: 1.5,
-                onUpdate: () => camera.lookAt(startLook.x, startLook.y, startLook.z),
+                ease: "power2.inOut",
                 onComplete: () => {
                     // Hide title and instruction, show back button
                     document.getElementById('title').style.display = 'none';
                     document.getElementById('instruction').style.display = 'none';
                     document.getElementById('back-btn').style.display = 'block';
+                    controls.enabled = true;
                     console.log(`Zoomed into Bed #${bed.userData.id}`);
                 }
             });
@@ -234,19 +247,30 @@
             document.getElementById('title').style.display = 'block';
             document.getElementById('instruction').style.display = 'block';
 
+            // Disable controls during animation
+            controls.enabled = false;
+
             // Animate back to overview
             gsap.to(camera.position, {
                 x: 0, y: 20, z: 30,
                 duration: 1.5,
+                ease: "power2.inOut"
+            });
+
+            gsap.to(controls.target, {
+                x: 0, y: 0, z: 0,
+                duration: 1.5,
                 ease: "power2.inOut",
-                onUpdate: () => camera.lookAt(0, 0, 0)
+                onComplete: () => {
+                    controls.enabled = true;
+                }
             });
         };
 
         // 4. RENDER LOOP
         function animate() {
             requestAnimationFrame(animate);
-            if (!currentZoomedBed) camera.lookAt(0, 0, 0); // Keep looking at center when not zooming
+            controls.update();
             renderer.render(scene, camera);
         }
         animate();
