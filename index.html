@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Garden Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: black;
+            pointer-events: none;
+        }
+
+        #back-btn {
+            pointer-events: auto;
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: none;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="ui-layer">
+        <h1>Garden Planner Demo</h1>
+        <p>Click on a garden bed to inspect it.</p>
+        <button id="back-btn" onclick="resetView()">← Back to Overview</button>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. SCENE SETUP
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff); // White
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 20, 30); // High angle overview, zoomed out
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+        dirLight.position.set(-15, 20, 30);
+        scene.add(dirLight);
+
+        // 2. THE GARDEN (Placeholder for your GLB model)
+        const gardenGroup = new THREE.Group();
+        scene.add(gardenGroup);
+
+
+
+        // Create Interactable Garden Boxes
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+        const gardenBeds = []; // This array will hold your interactable boxes
+
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
+
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader(dracoLoader);
+        loader.load(
+            '3dModels/potager.glb', // Make sure this path is correct relative to your HTML file
+            function (gltf) {
+                const model = gltf.scene;
+                scene.add(model);
+
+                // This loop checks every object in your Blender file
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        // OPTIONAL: Enable shadows
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+
+                        // CHECK: Is this a garden box?
+                        // Make sure your Blender names match this string!
+                        if (child.name.includes('GardenBox')) {
+
+                            // Clone material so each box can be highlighted independently
+                            child.material = child.material.clone();
+
+                            // Add to our interactable list
+                            gardenBeds.push(child);
+
+                            // Store original color for the hover effect
+                            child.userData.originalColor = child.material.color.getHex();
+                            child.userData.isBed = true;
+                        }
+                    }
+                });
+            },
+            undefined, // onProgress callback (optional)
+            function (error) {
+                console.error('An error happened loading the GLB:', error);
+            }
+        );
+
+        // 3. INTERACTION LOGIC
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let currentZoomedBed = null;
+
+        // Load GSAP for animation from a CDN script (non-module for simplicity in this demo)
+        import { gsap } from 'https://cdn.skypack.dev/gsap';
+
+        window.addEventListener('click', onMouseClick);
+        window.addEventListener('mousemove', onMouseMove);
+
+        function onMouseMove(event) {
+            // Calculate mouse position
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // Hover effect logic
+            if (currentZoomedBed) return; // Don't highlight if already zoomed in
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(gardenBeds);
+
+            // Reset all beds to brown
+            gardenBeds.forEach(b => b.material.color.setHex(b.userData.originalColor));
+
+            if (intersects.length > 0) {
+                // Highlight hovered bed
+                intersects[0].object.material.color.setHex(0xffd700);
+                document.body.style.cursor = 'pointer';
+            } else {
+                document.body.style.cursor = 'default';
+            }
+        }
+
+        function onMouseClick(event) {
+            if (currentZoomedBed) return; // If already zoomed, ignore click (use back button)
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(gardenBeds);
+
+            if (intersects.length > 0) {
+                focusOnBed(intersects[0].object);
+            }
+        }
+
+        function focusOnBed(bed) {
+            currentZoomedBed = bed;
+
+            // Calculate target camera position (above and slightly back from the bed)
+            const targetPos = {
+                x: bed.position.x,
+                y: bed.position.y + 3, // Zoom height
+                z: bed.position.z + 2  // Offset back
+            };
+
+            // Animate Camera Position
+            gsap.to(camera.position, {
+                x: targetPos.x, y: targetPos.y, z: targetPos.z,
+                duration: 1.5,
+                ease: "power2.inOut"
+            });
+
+            // Animate Camera LookAt (We use a dummy object to tween the controls target if using OrbitControls, 
+            // but for raw camera we tween rotation or lookAt. Here we just tween position and update LookAt in render loop 
+            // roughly, or better yet, tween the controls target if we had them. 
+            // For simplicity, we will lock the camera to look at the bed center.)
+
+            // Simple approach: Tween a 'lookAt' vector
+            const startLook = { x: 0, y: 0, z: 0 }; // Current center
+            const endLook = { x: bed.position.x, y: bed.position.y, z: bed.position.z };
+
+            gsap.to(startLook, {
+                x: endLook.x, y: endLook.y, z: endLook.z,
+                duration: 1.5,
+                onUpdate: () => camera.lookAt(startLook.x, startLook.y, startLook.z),
+                onComplete: () => {
+                    // Show UI for this bed
+                    document.getElementById('back-btn').style.display = 'block';
+                    // Here you would trigger your "Dynamic Planting" UI
+                    console.log(`Zoomed into Bed #${bed.userData.id}`);
+                }
+            });
+        }
+
+        // Exposed to global scope for the HTML button
+        window.resetView = function () {
+            currentZoomedBed = null;
+            document.getElementById('back-btn').style.display = 'none';
+
+            // Animate back to overview
+            gsap.to(camera.position, {
+                x: 0, y: 20, z: 30,
+                duration: 1.5,
+                ease: "power2.inOut",
+                onUpdate: () => camera.lookAt(0, 0, 0)
+            });
+        };
+
+        // 4. RENDER LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!currentZoomedBed) camera.lookAt(0, 0, 0); // Keep looking at center when not zooming
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>
