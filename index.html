@@ -1,44 +1,538 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
-    <title>Garden Prototype</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Potager — Devinci Durable</title>
+    <meta name="description"
+        content="Découvrez le potager de l'association Devinci Durable en 3D. Explorez les bacs de culture interactifs.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --navy: #1a2e4a;
+            --navy-light: #243d5e;
+            --green-primary: #2e8b57;
+            --green-light: #4caf50;
+            --green-accent: #7dcf8e;
+            --blue-accent: #4a9fd6;
+            --white: #ffffff;
+            --off-white: #f4f7f5;
+            --text-muted: #8a9bb0;
+            --sidebar-width: 320px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
-            font-family: sans-serif;
+            font-family: 'Outfit', sans-serif;
+            background: var(--navy);
         }
 
-        #ui-layer {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: black;
+        /* ========== SIDEBAR ========== */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--navy);
+            color: var(--white);
+            z-index: 100;
+            transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+        }
+
+        #sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .sidebar-logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--green-primary), var(--blue-accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-brand span {
+            font-size: 12px;
+            color: var(--green-accent);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            padding: 12px 14px 8px;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--white);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(46, 139, 87, 0.25), rgba(74, 159, 214, 0.15));
+            color: var(--green-accent);
+            font-weight: 600;
+        }
+
+        .nav-item .nav-icon {
+            font-size: 20px;
+            width: 28px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .sidebar-footer a {
+            color: var(--green-accent);
+            text-decoration: none;
+        }
+
+        /* ========== SIDEBAR OVERLAY ========== */
+        #sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #sidebar-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ========== MENU TOGGLE BUTTON ========== */
+        #menu-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 101;
+            width: 48px;
+            height: 48px;
+            background: var(--navy);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #menu-toggle:hover {
+            background: var(--navy-light);
+            transform: scale(1.05);
+        }
+
+        #menu-toggle span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--white);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        #menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        #menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        #menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* ========== TOP BAR (title area) ========== */
+        #top-bar {
+            position: fixed;
+            top: 16px;
+            left: 76px;
+            right: 16px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        #top-bar h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--navy);
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6);
+            letter-spacing: -0.5px;
+        }
+
+        #top-bar p {
+            font-size: 14px;
+            color: var(--navy-light);
+            font-weight: 400;
+            opacity: 0.7;
+        }
+
+        /* ========== BACK BUTTON ========== */
+        #back-btn {
+            position: fixed;
+            top: 16px;
+            left: 76px;
+            z-index: 50;
+            pointer-events: auto;
+            background: var(--navy);
+            color: var(--white);
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            display: none;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #back-btn:hover {
+            background: var(--navy-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ========== LOADING SCREEN ========== */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--navy);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            transition: opacity 0.6s ease;
+        }
+
+        #loading-screen.hidden {
+            opacity: 0;
             pointer-events: none;
         }
 
-        #back-btn {
-            pointer-events: auto;
-            background: white;
-            color: black;
-            border: none;
+        .loading-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--green-primary), var(--blue-accent));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.08);
+                opacity: 0.8;
+            }
+        }
+
+        .loading-text {
+            color: var(--white);
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .loading-bar-container {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--green-primary), var(--green-accent));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* ========== À PROPOS PANEL ========== */
+        #about-panel {
+            position: fixed;
+            inset: 0;
+            background: var(--off-white);
+            z-index: 90;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #about-panel.visible {
+            transform: translateX(0);
+        }
+
+        .about-content {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 80px 32px 60px;
+        }
+
+        .about-content h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+
+        .about-content .subtitle {
+            font-size: 16px;
+            color: var(--green-primary);
+            font-weight: 600;
+            margin-bottom: 32px;
+        }
+
+        .about-content p {
+            font-size: 16px;
+            line-height: 1.75;
+            color: #3a4a5c;
+            margin-bottom: 20px;
+        }
+
+        .about-content h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--navy);
+            margin: 32px 0 12px;
+        }
+
+        .about-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--navy);
+            color: var(--white);
             padding: 10px 20px;
-            cursor: pointer;
-            display: none;
-            font-weight: bold;
-            border-radius: 5px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 24px;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .about-badge:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 600px) {
+            :root {
+                --sidebar-width: 280px;
+            }
+
+            #top-bar {
+                left: 72px;
+                right: 12px;
+            }
+
+            #top-bar h1 {
+                font-size: 20px;
+            }
+
+            #top-bar p {
+                display: none;
+            }
+
+            #back-btn {
+                left: 72px;
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+
+            .about-content {
+                padding: 80px 20px 40px;
+            }
+
+            .about-content h1 {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div id="ui-layer">
-        <h1 id="title">Le Potager</h1>
-        <p id="instruction">Clickez sur un objet pour le voir de plus près.</p>
-        <button id="back-btn" onclick="resetView()">←</button>
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loading-logo">🌱</div>
+        <div class="loading-text">Chargement du potager...</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- MENU TOGGLE -->
+    <button id="menu-toggle" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🌍</div>
+            <div class="sidebar-brand">
+                <h2>Devinci Durable</h2>
+                <span>Association Développement Durable</span>
+            </div>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-label">Navigation</div>
+            <a class="nav-item active" id="nav-demo" onclick="showDemo()">
+                <span class="nav-icon">🌿</span>
+                Le Potager 3D
+            </a>
+            <a class="nav-item" id="nav-about" onclick="showAbout()">
+                <span class="nav-icon">ℹ️</span>
+                À Propos
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            Fait avec 💚 par Devinci Durable
+        </div>
+    </nav>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- TOP BAR (3D View) -->
+    <div id="top-bar">
+        <div>
+            <h1 id="title">Le Potager</h1>
+            <p id="instruction">Cliquez sur un bac pour l'explorer</p>
+        </div>
+    </div>
+
+    <!-- BACK BUTTON (zoomed view) -->
+    <button id="back-btn" onclick="resetView()">← Retour</button>
+
+    <!-- À PROPOS PANEL -->
+    <div id="about-panel">
+        <div class="about-content">
+            <h1>À Propos</h1>
+            <div class="subtitle">Le potager Devinci Durable</div>
+            <p>
+                L’objectif de <strong>Devinci Durable</strong> est de fédérer les écoles du Pôle autour d’une thématique
+                qui nous concerne tous : le développement durable. Nous souhaitons réaliser, cette année, une semaine du
+                développement durable en y intégrant des ateliers et des conférences sur les différents aspects du DD.
+                Toute récente, DevDu se veut être une association conviviale et active : elle a besoin de membres
+                motivés pour lui donner vie et s’investir au maximum sur notre campus
+            </p>
+
+            <h3>🌱 Le Projet Potager</h3>
+            <p>
+                Ce potager est un projet porté par les membres de l'association. Il a pour objectif
+                de créer un espace vert au sein de la Defense.
+            </p>
+            <p>
+                Cette maquette 3D interactive vous permet de découvrir l'aménagement
+                du potager et d'explorer chaque bac de culture en détail.
+            </p>
+
+            <h3>🤝 Nous Rejoindre</h3>
+            <p>
+                Vous souhaitez participer au potager ou rejoindre l'asso ?
+                N'hésitez pas à nous contacter sur nos réseaux sociaux ou
+                directement sur le campus.
+            </p>
+
+            <a class="about-badge" href="https://devincidurable.fr" target="_blank">
+                🌍 Visiter DevinciDurable.fr
+            </a>
+        </div>
     </div>
 
     <script type="importmap">
@@ -56,13 +550,14 @@
 
         // 1. SCENE SETUP
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xffffff); // White
+        scene.background = new THREE.Color(0xffffff);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 20, 30); // High angle overview, zoomed out
+        camera.position.set(0, 20, 30);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.body.appendChild(renderer.domElement);
 
         // Lights
@@ -72,17 +567,15 @@
         dirLight.position.set(-15, 20, 30);
         scene.add(dirLight);
 
-        // 2. THE GARDEN (Placeholder for your GLB model)
+        // 2. THE GARDEN
         const gardenGroup = new THREE.Group();
         scene.add(gardenGroup);
 
-
-
-        // Create Interactable Garden Boxes
+        // Load Model
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
-        const gardenBeds = []; // This array will hold your interactable hitboxes
+        const gardenBeds = [];
 
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
@@ -90,37 +583,43 @@
         const loader = new GLTFLoader();
         loader.setDRACOLoader(dracoLoader);
         loader.load(
-            '3dModels/potager.glb', // Make sure this path is correct relative to your HTML file
+            '3dModels/potager.glb',
             function (gltf) {
                 const model = gltf.scene;
                 scene.add(model);
 
-                // This loop checks every object in your Blender file
                 model.traverse((child) => {
                     if (child.isMesh) {
-                        // OPTIONAL: Enable shadows
                         child.castShadow = true;
                         child.receiveShadow = true;
 
-                        // CHECK: Is this a HitBox?
                         if (child.name.includes('HitBox')) {
-                            // Make hitbox invisible but keep it for raycasting
                             child.material = new THREE.MeshBasicMaterial({
                                 transparent: true,
                                 opacity: 0,
                                 depthWrite: false,
                             });
-
-                            // Add to our interactable list
                             gardenBeds.push(child);
                             child.userData.isBed = true;
                         }
                     }
                 });
+
+                // Hide loading screen
+                const loadingScreen = document.getElementById('loading-screen');
+                loadingScreen.classList.add('hidden');
+                setTimeout(() => loadingScreen.style.display = 'none', 600);
             },
-            undefined, // onProgress callback (optional)
+            function (xhr) {
+                // Update loading bar
+                if (xhr.lengthComputable) {
+                    const pct = (xhr.loaded / xhr.total) * 100;
+                    document.getElementById('loading-bar').style.width = pct + '%';
+                }
+            },
             function (error) {
                 console.error('An error happened loading the GLB:', error);
+                document.querySelector('.loading-text').textContent = 'Erreur de chargement...';
             }
         );
 
@@ -129,26 +628,40 @@
         const mouse = new THREE.Vector2();
         let currentZoomedBed = null;
 
-        // Load GSAP for animation from a CDN script (non-module for simplicity in this demo)
         import { gsap } from 'https://cdn.skypack.dev/gsap';
 
         window.addEventListener('click', onMouseClick);
         window.addEventListener('mousemove', onMouseMove);
 
-        let currentOutline = null; // Track the current outline mesh
+        // Touch support for mobile
+        window.addEventListener('touchend', onTouchEnd);
+
+        function onTouchEnd(event) {
+            if (event.touches.length > 0) return;
+            const touch = event.changedTouches[0];
+            mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+            if (currentZoomedBed) return;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(gardenBeds);
+            if (intersects.length > 0) {
+                focusOnBed(intersects[0].object);
+            }
+        }
+
+        let currentOutline = null;
 
         function onMouseMove(event) {
-            // Calculate mouse position
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-            // Hover effect logic
-            if (currentZoomedBed) return; // Don't highlight if already zoomed in
+            if (currentZoomedBed) return;
 
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(gardenBeds);
 
-            // Remove previous outline
             if (currentOutline) {
                 currentOutline.parent.remove(currentOutline);
                 currentOutline.geometry.dispose();
@@ -158,13 +671,10 @@
 
             if (intersects.length > 0) {
                 const hoveredBed = intersects[0].object;
-
-                // Create white outline from the mesh edges
                 const edges = new THREE.EdgesGeometry(hoveredBed.geometry, 15);
-                const outlineMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+                const outlineMat = new THREE.LineBasicMaterial({ color: 0x1a2e4a, linewidth: 2 });
                 currentOutline = new THREE.LineSegments(edges, outlineMat);
 
-                // Match the bed's transform
                 currentOutline.position.copy(hoveredBed.position);
                 currentOutline.rotation.copy(hoveredBed.rotation);
                 currentOutline.scale.copy(hoveredBed.scale);
@@ -177,7 +687,8 @@
         }
 
         function onMouseClick(event) {
-            if (currentZoomedBed) return; // If already zoomed, ignore click (use back button)
+            if (event.target !== renderer.domElement) return;
+            if (currentZoomedBed) return;
 
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(gardenBeds);
@@ -190,27 +701,19 @@
         function focusOnBed(bed) {
             currentZoomedBed = bed;
 
-            // Calculate target camera position (above and slightly back from the bed)
             const targetPos = {
                 x: bed.position.x,
-                y: bed.position.y + 3, // Zoom height
-                z: bed.position.z + 2  // Offset back
+                y: bed.position.y + 3,
+                z: bed.position.z + 2
             };
 
-            // Animate Camera Position
             gsap.to(camera.position, {
                 x: targetPos.x, y: targetPos.y, z: targetPos.z,
                 duration: 1.5,
                 ease: "power2.inOut"
             });
 
-            // Animate Camera LookAt (We use a dummy object to tween the controls target if using OrbitControls, 
-            // but for raw camera we tween rotation or lookAt. Here we just tween position and update LookAt in render loop 
-            // roughly, or better yet, tween the controls target if we had them. 
-            // For simplicity, we will lock the camera to look at the bed center.)
-
-            // Simple approach: Tween a 'lookAt' vector
-            const startLook = { x: 0, y: 0, z: 0 }; // Current center
+            const startLook = { x: 0, y: 0, z: 0 };
             const endLook = { x: bed.position.x, y: bed.position.y, z: bed.position.z };
 
             gsap.to(startLook, {
@@ -218,23 +721,18 @@
                 duration: 1.5,
                 onUpdate: () => camera.lookAt(startLook.x, startLook.y, startLook.z),
                 onComplete: () => {
-                    // Hide title and instruction, show back button
-                    document.getElementById('title').style.display = 'none';
-                    document.getElementById('instruction').style.display = 'none';
-                    document.getElementById('back-btn').style.display = 'block';
-                    console.log(`Zoomed into Bed #${bed.userData.id}`);
+                    document.getElementById('top-bar').style.opacity = '0';
+                    document.getElementById('back-btn').style.display = 'flex';
+                    console.log(`Zoomed into Bed: ${bed.name}`);
                 }
             });
         }
 
-        // Exposed to global scope for the HTML button
         window.resetView = function () {
             currentZoomedBed = null;
             document.getElementById('back-btn').style.display = 'none';
-            document.getElementById('title').style.display = 'block';
-            document.getElementById('instruction').style.display = 'block';
+            document.getElementById('top-bar').style.opacity = '1';
 
-            // Animate back to overview
             gsap.to(camera.position, {
                 x: 0, y: 20, z: 30,
                 duration: 1.5,
@@ -243,10 +741,34 @@
             });
         };
 
+        // Sidebar & Navigation
+        window.toggleSidebar = function () {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const toggle = document.getElementById('menu-toggle');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('visible');
+            toggle.classList.toggle('active');
+        };
+
+        window.showDemo = function () {
+            document.getElementById('about-panel').classList.remove('visible');
+            document.getElementById('nav-demo').classList.add('active');
+            document.getElementById('nav-about').classList.remove('active');
+            toggleSidebar();
+        };
+
+        window.showAbout = function () {
+            document.getElementById('about-panel').classList.add('visible');
+            document.getElementById('nav-about').classList.add('active');
+            document.getElementById('nav-demo').classList.remove('active');
+            toggleSidebar();
+        };
+
         // 4. RENDER LOOP
         function animate() {
             requestAnimationFrame(animate);
-            if (!currentZoomedBed) camera.lookAt(0, 0, 0); // Keep looking at center when not zooming
+            if (!currentZoomedBed) camera.lookAt(0, 0, 0);
             renderer.render(scene, camera);
         }
         animate();
