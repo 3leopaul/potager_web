@@ -440,6 +440,111 @@
                 font-size: 28px;
             }
         }
+
+        /* ========== INTERACTION PANEL ========== */
+        #interaction-panel {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 340px;
+            background: rgba(26, 46, 74, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 24px;
+            z-index: 60;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(120%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        #interaction-panel.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .interaction-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .interaction-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+
+        .interaction-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .interaction-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .interaction-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .interaction-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--green-accent);
+            transform: translateX(4px);
+        }
+
+        .interaction-btn .btn-icon {
+            font-size: 24px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .interaction-btn .btn-content {
+            flex: 1;
+        }
+
+        .interaction-btn .btn-title {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .interaction-btn .btn-subtitle {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        @media (max-width: 600px) {
+            #interaction-panel {
+                bottom: 16px;
+                right: 16px;
+                left: 16px;
+                width: auto;
+            }
+        }
     </style>
 </head>
 
@@ -538,6 +643,30 @@
         </div>
     </div>
 
+    <!-- INTERACTION PANEL -->
+    <div id="interaction-panel">
+        <div class="interaction-header">
+            <h3 id="interaction-title">Bac de Culture</h3>
+            <p id="interaction-subtitle">Sélectionnez une action</p>
+        </div>
+        <div class="interaction-buttons">
+            <button class="interaction-btn" id="btn-info">
+                <span class="btn-icon">📖</span>
+                <div class="btn-content">
+                    <span class="btn-title">Informations</span>
+                    <span class="btn-subtitle">En savoir plus sur ce bac</span>
+                </div>
+            </button>
+            <button class="interaction-btn" id="btn-interact">
+                <span class="btn-icon">🌱</span>
+                <div class="btn-content">
+                    <span class="btn-title">Interagir</span>
+                    <span class="btn-subtitle">Planter, arroser, récolter</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
     <script type="importmap">
         {
             "imports": {
@@ -588,6 +717,23 @@
         import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
         const gardenBeds = [];
+
+        // Data for each garden bed - Add your own entries here!
+        const bedData = {
+            "HitBox_1": {
+                title: "Carré de Tomates",
+                description: "Les tomates aiment le soleil et beaucoup d'eau. Variété: Cœur de Bœuf. Plantation en mai, récolte en août."
+            },
+            "HitBox_2": {
+                title: "Carré de Salades",
+                description: "Salades variées pour toute la saison. Arrosage régulier nécessaire. Récolte tous les 15 jours."
+            },
+            "HitBox_3": {
+                title: "Carré de Carottes",
+                description: "Carottes nantaises. Sol meuble requis. Semis en mars, récolte en juillet."
+            }
+            // Add more entries based on your Blender object names
+        };
 
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
@@ -739,6 +885,19 @@
         function focusOnBed(bed) {
             currentZoomedBed = bed;
 
+            // Get bed data or use defaults
+            const data = bedData[bed.name] || {
+                title: bed.name || "Bac de Culture",
+                description: "Aucune information disponible pour ce bac."
+            };
+
+            // Update interaction panel
+            document.getElementById('interaction-title').textContent = data.title;
+            document.getElementById('interaction-panel').classList.add('visible');
+
+            // Log the bed name so user can add it to bedData
+            console.log(`Clicked on bed: "${bed.name}" - Add this to bedData if needed`);
+
             const targetPos = {
                 x: bed.position.x,
                 y: bed.position.y + 3,
@@ -776,6 +935,9 @@
             currentZoomedBed = null;
             document.getElementById('back-btn').style.display = 'none';
             document.getElementById('top-bar').style.opacity = '1';
+
+            // Hide interaction panel
+            document.getElementById('interaction-panel').classList.remove('visible');
 
             // Disable controls during animation
             controls.enabled = false;
@@ -820,6 +982,44 @@
             document.getElementById('nav-demo').classList.remove('active');
             toggleSidebar();
         };
+
+        // Interaction Panel Button Handlers
+        document.getElementById('btn-info').addEventListener('click', () => {
+            if (!currentZoomedBed) return;
+
+            const data = bedData[currentZoomedBed.name] || {
+                title: currentZoomedBed.name || "Bac de Culture",
+                description: "Aucune information disponible pour ce bac."
+            };
+
+            // For now, show an alert with the information
+            // In the future, you could create a dedicated info panel
+            alert(`📖 ${data.title}\n\n${data.description}`);
+
+            console.log('Information requested for:', currentZoomedBed.name);
+        });
+
+        document.getElementById('btn-interact').addEventListener('click', () => {
+            if (!currentZoomedBed) return;
+
+            const bedName = currentZoomedBed.name;
+
+            // Future extensibility: Add specific interactions based on bed type
+            // Example structure for future development:
+            /*
+            if (bedName.includes('Tomates')) {
+                showWateringMenu();
+            } else if (bedName.includes('Salades')) {
+                showHarvestMenu();
+            } else {
+                showGenericInteractionMenu();
+            }
+            */
+
+            // For now, just log the interaction
+            console.log('Interact clicked for:', bedName);
+            alert(`🌱 Interaction avec ${bedData[bedName]?.title || bedName}\n\nFonctionnalités à venir:\n• Planter des graines\n• Arroser les plantes\n• Récolter les légumes`);
+        });
 
         // 4. RENDER LOOP
         function animate() {
