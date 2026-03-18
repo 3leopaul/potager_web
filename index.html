@@ -545,6 +545,146 @@
                 width: auto;
             }
         }
+
+        /* ========== PLANT MODAL ========== */
+        #plant-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 150;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #plant-modal.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--navy);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #plant-modal.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+
+        .modal-header p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .close-modal {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--white);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .plant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        /* Custom scrollbar for grid */
+        .plant-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .plant-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .plant-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .plant-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .plant-card:hover {
+            background: rgba(46, 139, 87, 0.15);
+            border-color: var(--green-accent);
+            transform: translateY(-4px);
+        }
+
+        .plant-preview {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .plant-info h4 {
+            font-size: 15px;
+            color: var(--white);
+            margin-bottom: 2px;
+        }
+
+        .plant-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 
@@ -658,12 +798,36 @@
                 </div>
             </button>
             <button class="interaction-btn" id="btn-interact">
-                <span class="btn-icon">🌱</span>
+                <span class="btn-icon">🔧</span>
                 <div class="btn-content">
-                    <span class="btn-title">Interagir</span>
-                    <span class="btn-subtitle">Planter, arroser, récolter</span>
+                    <span class="btn-title">Actions</span>
+                    <span class="btn-subtitle">Arroser, récolter...</span>
                 </div>
             </button>
+            <button class="interaction-btn" id="btn-plant"
+                style="border-color: var(--green-light); background: rgba(76, 175, 80, 0.1);">
+                <span class="btn-icon">🌱</span>
+                <div class="btn-content">
+                    <span class="btn-title">Planter</span>
+                    <span class="btn-subtitle">Ajouter une culture</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- PLANT MODAL -->
+    <div id="plant-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>Planter des graines</h2>
+                    <p id="modal-bed-name">Sélectionnez une plante pour ce bac</p>
+                </div>
+                <button class="close-modal" onclick="closePlantModal()">&times;</button>
+            </div>
+            <div class="plant-grid" id="plant-grid">
+                <!-- Plant cards will be injected here -->
+            </div>
         </div>
     </div>
 
@@ -735,6 +899,13 @@
             // Add more entries based on your Blender object names
         };
 
+        const plantsData = [
+            { id: 'plant1', name: 'Plante Verte', model: './3dModels/plants/sprout1.glb', icon: '🌿', description: 'Une plante robuste' },
+            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Salade croquante' },
+            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/sprout1.glb', icon: '🍅', description: 'Tomates juteuses' },
+            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🌱', description: 'Herbe aromatique' },
+        ];
+
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
 
@@ -785,6 +956,7 @@
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let currentZoomedBed = null;
+        let selectedPlantForPlanting = null;
 
         import { gsap } from 'https://cdn.skypack.dev/gsap';
 
@@ -868,16 +1040,47 @@
         }
 
         function onMouseClick(event) {
+            // Refresh mouse coordinates on click for accuracy
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
             // Ignore clicks on UI elements (only react to canvas clicks)
             if (event.target !== renderer.domElement) return;
             // Ignore if it was a drag/pan gesture
             if (wasDragged(event.clientX, event.clientY)) return;
-            if (currentZoomedBed) return; // If already zoomed, ignore click (use back button)
+
+            console.log("Click Event:", {
+                selectedPlant: selectedPlantForPlanting?.name,
+                currentBed: currentZoomedBed?.name
+            });
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(gardenBeds);
 
+            // If we are in planting mode, try to plant where clicked
+            if (selectedPlantForPlanting && currentZoomedBed) {
+                console.log("Attempting to plant in:", currentZoomedBed.name);
+
+                const intersects = raycaster.intersectObject(currentZoomedBed, true);
+                console.log(`Intersections with ${currentZoomedBed.name}:`, intersects.length);
+
+                if (intersects.length > 0) {
+                    const hitPoint = intersects[0].point;
+                    console.log(`Planting hit at: x=${hitPoint.x.toFixed(2)}, y=${hitPoint.y.toFixed(2)}, z=${hitPoint.z.toFixed(2)}`);
+                    plantSeed(selectedPlantForPlanting, hitPoint);
+
+                    // Note: We keep selectedPlantForPlanting set so the user can plant multiple times.
+                    // This stays active until they leave the bed view or explicitly select something else.
+                    return;
+                } else {
+                    console.warn("Raycast missed the bed surface. Clicking outside?");
+                }
+            }
+
+            if (currentZoomedBed) return;
+
+            const intersects = raycaster.intersectObjects(gardenBeds);
             if (intersects.length > 0) {
+                console.log("Focusing on bed:", intersects[0].object.name);
                 focusOnBed(intersects[0].object);
             }
         }
@@ -933,8 +1136,12 @@
 
         window.resetView = function () {
             currentZoomedBed = null;
+            selectedPlantForPlanting = null;
             document.getElementById('back-btn').style.display = 'none';
             document.getElementById('top-bar').style.opacity = '1';
+            document.getElementById('title').style.display = 'block';
+            document.getElementById('instruction').style.display = 'block';
+            document.getElementById('instruction').textContent = "Cliquez sur un bac pour l'explorer";
 
             // Hide interaction panel
             document.getElementById('interaction-panel').classList.remove('visible');
@@ -983,6 +1190,92 @@
             toggleSidebar();
         };
 
+        // Plant Modal Logic
+        window.openPlantModal = function () {
+            if (!currentZoomedBed) return;
+
+            const bedName = bedData[currentZoomedBed.name]?.title || currentZoomedBed.name;
+            document.getElementById('modal-bed-name').textContent = `Planter dans : ${bedName}`;
+
+            const grid = document.getElementById('plant-grid');
+            grid.innerHTML = '';
+
+            plantsData.forEach(plant => {
+                const card = document.createElement('div');
+                card.className = 'plant-card';
+                card.innerHTML = `
+                    <div class="plant-preview">${plant.icon}</div>
+                    <div class="plant-info">
+                        <h4>${plant.name}</h4>
+                        <p>${plant.description}</p>
+                    </div>
+                `;
+                card.onclick = () => {
+                    selectedPlantForPlanting = plant;
+                    closePlantModal();
+                    // Feedback for planting mode
+                    document.getElementById('instruction').textContent = `Cliquez dans le bac pour planter : ${plant.name}`;
+                    document.getElementById('instruction').style.display = 'block';
+                    document.getElementById('top-bar').style.opacity = '1';
+                    document.getElementById('title').style.display = 'none';
+                };
+                grid.appendChild(card);
+            });
+
+            document.getElementById('plant-modal').classList.add('visible');
+        };
+
+        window.closePlantModal = function () {
+            document.getElementById('plant-modal').classList.remove('visible');
+        };
+
+        function plantSeed(plant, position) {
+            if (!currentZoomedBed) {
+                console.error("Planting failed: No bed selected.");
+                return;
+            }
+
+            console.log(`[PLANT] Starting model load for: ${plant.name}`, { path: plant.model, worldPos: position });
+
+            loader.load(plant.model, (gltf) => {
+                const plantModel = gltf.scene;
+
+                // Position at the clicked point
+                plantModel.position.copy(position);
+
+                // Adjust height: user mentioned it was too high, so I increased offset slightly
+                // to avoid clipping ifHitBox is exactly on top, but effectively reduced relative to origin.
+                plantModel.position.y += 0.6;
+
+                // Add some randomness to rotation for variety
+                plantModel.rotation.y = Math.random() * Math.PI * 2;
+
+                // Scale up significantly to ensure they are visible!
+                plantModel.scale.set(0.1, 0.1, 0.1);
+                gsap.to(plantModel.scale, { x: 1.0, y: 1.0, z: 1.0, duration: 1, ease: 'back.out(1.7)' });
+
+                scene.add(plantModel);
+                gardenGroup.add(plantModel);
+
+                console.log(`[SUCCESS] ${plant.name} added at:`,
+                    `x:${plantModel.position.x.toFixed(2)}, y:${plantModel.position.y.toFixed(2)}, z:${plantModel.position.z.toFixed(2)}`
+                );
+            }, undefined, (error) => {
+                console.error(`[ERROR] Failed to load model for ${plant.name}:`, error);
+
+                // Fallback marker
+                console.log("Adding fallback marker (red cube)...");
+                const fallback = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.5, 0.5, 0.5),
+                    new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                );
+                fallback.position.copy(position);
+                fallback.position.y += 0.25;
+                scene.add(fallback);
+                gardenGroup.add(fallback);
+            });
+        }
+
         // Interaction Panel Button Handlers
         document.getElementById('btn-info').addEventListener('click', () => {
             if (!currentZoomedBed) return;
@@ -1001,24 +1294,13 @@
 
         document.getElementById('btn-interact').addEventListener('click', () => {
             if (!currentZoomedBed) return;
-
             const bedName = currentZoomedBed.name;
+            console.log('Actions clicked for:', bedName);
+            alert(`🔧 Actions pour ${bedData[bedName]?.title || bedName}\n\nFonctionnalités à venir:\n• Arroser les plantes\n• Désherber\n• Récolter les légumes`);
+        });
 
-            // Future extensibility: Add specific interactions based on bed type
-            // Example structure for future development:
-            /*
-            if (bedName.includes('Tomates')) {
-                showWateringMenu();
-            } else if (bedName.includes('Salades')) {
-                showHarvestMenu();
-            } else {
-                showGenericInteractionMenu();
-            }
-            */
-
-            // For now, just log the interaction
-            console.log('Interact clicked for:', bedName);
-            alert(`🌱 Interaction avec ${bedData[bedName]?.title || bedName}\n\nFonctionnalités à venir:\n• Planter des graines\n• Arroser les plantes\n• Récolter les légumes`);
+        document.getElementById('btn-plant').addEventListener('click', () => {
+            openPlantModal();
         });
 
         // 4. RENDER LOOP
