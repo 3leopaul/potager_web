@@ -449,7 +449,7 @@
             width: 340px;
             background: rgba(26, 46, 74, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
             z-index: 60;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -458,6 +458,9 @@
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         #interaction-panel.visible {
@@ -466,10 +469,33 @@
             pointer-events: auto;
         }
 
+        /* Minimized state for "folding down" */
+        #interaction-panel.minimized {
+            transform: translateY(calc(100% - 90px));
+        }
+
+        /* Drag handle/Indicator at top */
+        .panel-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            margin: -8px auto 16px;
+            display: none;
+            /* Only show on mobile ? */
+        }
+
         .interaction-header {
             margin-bottom: 20px;
             padding-bottom: 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-text {
+            flex: 1;
         }
 
         .interaction-header h3 {
@@ -483,6 +509,35 @@
             font-size: 13px;
             color: var(--text-muted);
             font-weight: 400;
+        }
+
+        .panel-toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .panel-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--green-accent);
+        }
+
+        #interaction-panel.minimized .panel-toggle-btn {
+            transform: rotate(180deg);
+        }
+
+        #interaction-panel.minimized .interaction-buttons {
+            opacity: 0;
+            pointer-events: none;
         }
 
         .interaction-buttons {
@@ -539,10 +594,21 @@
 
         @media (max-width: 600px) {
             #interaction-panel {
-                bottom: 16px;
-                right: 16px;
-                left: 16px;
-                width: auto;
+                bottom: 0px;
+                right: 0px;
+                left: 0px;
+                width: 100%;
+                border-radius: 24px 24px 0 0;
+                padding: 16px 20px 32px;
+                border-bottom: none;
+            }
+
+            .panel-handle {
+                display: block;
+            }
+
+            #interaction-panel.minimized {
+                transform: translateY(calc(100% - 85px));
             }
         }
 
@@ -785,9 +851,15 @@
 
     <!-- INTERACTION PANEL -->
     <div id="interaction-panel">
+        <div class="panel-handle"></div>
         <div class="interaction-header">
-            <h3 id="interaction-title">Bac de Culture</h3>
-            <p id="interaction-subtitle">Sélectionnez une action</p>
+            <div class="header-text">
+                <h3 id="interaction-title">Bac de Culture</h3>
+                <p id="interaction-subtitle">Sélectionnez une action</p>
+            </div>
+            <button class="panel-toggle-btn" onclick="toggleInteractionPanel()">
+                <span id="panel-chevron">▾</span>
+            </button>
         </div>
         <div class="interaction-buttons">
             <button class="interaction-btn" id="btn-info">
@@ -1266,7 +1338,9 @@
 
             // Update interaction panel
             document.getElementById('interaction-title').textContent = data.title;
-            document.getElementById('interaction-panel').classList.add('visible');
+            const panel = document.getElementById('interaction-panel');
+            panel.classList.remove('minimized');
+            panel.classList.add('visible');
 
             // Log the bed name so user can add it to bedData
             console.log(`Clicked on bed: "${bed.name}" - Add this to bedData if needed`);
@@ -1314,7 +1388,9 @@
             document.getElementById('instruction').textContent = "Cliquez sur un bac pour l'explorer";
 
             // Hide interaction panel
-            document.getElementById('interaction-panel').classList.remove('visible');
+            const panel = document.getElementById('interaction-panel');
+            panel.classList.remove('visible');
+            panel.classList.remove('minimized');
 
             // Disable controls during animation
             controls.enabled = false;
@@ -1344,6 +1420,20 @@
             sidebar.classList.toggle('open');
             overlay.classList.toggle('visible');
             toggle.classList.toggle('active');
+        };
+
+        window.toggleInteractionPanel = function () {
+            const panel = document.getElementById('interaction-panel');
+            panel.classList.toggle('minimized');
+        };
+
+        window.minimizeInteractionPanel = function (shouldMinimize) {
+            const panel = document.getElementById('interaction-panel');
+            if (shouldMinimize) {
+                panel.classList.add('minimized');
+            } else {
+                panel.classList.remove('minimized');
+            }
         };
 
         window.showDemo = function () {
@@ -1384,10 +1474,14 @@
                     selectedPlantForPlanting = plant;
                     closePlantModal();
                     // Feedback for planting mode
+                    document.getElementById('interaction-subtitle').textContent = `Plante sélectionnée : ${plant.name}`;
                     document.getElementById('instruction').textContent = `Cliquez dans le bac pour planter : ${plant.name}`;
                     document.getElementById('instruction').style.display = 'block';
                     document.getElementById('top-bar').style.opacity = '1';
                     document.getElementById('title').style.display = 'none';
+
+                    // Minimize panel automatically on plant selection (mobile UX)
+                    minimizeInteractionPanel(true);
                 };
                 grid.appendChild(card);
             });
