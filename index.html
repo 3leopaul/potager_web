@@ -881,6 +881,7 @@
         import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
         const gardenBeds = [];
+        let mainModel = null;
 
         // Data for each garden bed - Add your own entries here!
         const bedData = {
@@ -895,15 +896,19 @@
             "HitBox_3": {
                 title: "Carré de Carottes",
                 description: "Carottes nantaises. Sol meuble requis. Semis en mars, récolte en juillet."
+            },
+            "HitBox_4": {
+                title: "Carré de Radis",
+                description: "Radis de 18 jours. Croquants et rafraîchissants. Semis réguliers pour une récolte continue toute saison."
             }
-            // Add more entries based on your Blender object names
         };
 
         const plantsData = [
-            { id: 'plant1', name: 'Plante Verte', model: './3dModels/plants/sprout1.glb', icon: '🌿', description: 'Une plante robuste' },
-            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Salade croquante' },
-            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/sprout1.glb', icon: '🍅', description: 'Tomates juteuses' },
-            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🌱', description: 'Herbe aromatique' },
+            { id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1 },
+            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges' },
+            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Salade croquante', scale: 1.0 },
+            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🌿', description: 'Herbe aromatique' },
+            { id: 'plant1', name: 'Plante Verte', model: './3dModels/plants/plant1.glb', icon: '🌳', description: 'Une grande plante robuste' },
         ];
 
         const dracoLoader = new DRACOLoader();
@@ -914,10 +919,10 @@
         loader.load(
             './3dModels/potager.glb', // Make sure this path is correct relative to your HTML file
             function (gltf) {
-                const model = gltf.scene;
-                scene.add(model);
+                mainModel = gltf.scene;
+                scene.add(mainModel);
 
-                model.traverse((child) => {
+                mainModel.traverse((child) => {
                     if (child.isMesh) {
                         child.castShadow = true;
                         child.receiveShadow = true;
@@ -1078,8 +1083,39 @@
                         return;
                     }
 
-                    console.log(`Planting hit at: x=${hitPoint.x.toFixed(2)}, y=${hitPoint.y.toFixed(2)}, z=${hitPoint.z.toFixed(2)}`);
-                    plantSeed(selectedPlantForPlanting, hitPoint);
+                    console.log(`Initial hit at: x=${hitPoint.x.toFixed(2)}, y=${hitPoint.y.toFixed(2)}, z=${hitPoint.z.toFixed(2)}`);
+
+                    // NEW: Snap to actual soil geometry (ignoring hitboxes and other plants)
+                    const snapRay = new THREE.Raycaster();
+                    // Start from very high up to ensure we catch all geometry
+                    const rayOrigin = new THREE.Vector3(hitPoint.x, 100, hitPoint.z);
+                    const rayDir = new THREE.Vector3(0, -1, 0);
+                    snapRay.set(rayOrigin, rayDir);
+
+                    // Intersect with everything in the scene
+                    const snapIntersects = snapRay.intersectObjects(scene.children, true);
+                    let finalPlantPos = hitPoint.clone();
+
+                    if (snapIntersects.length > 0) {
+                        // Find the highest point that is NOT a hitbox, NOT a plant, and NOT the background/lines
+                        const validHit = snapIntersects.find(hit => {
+                            const name = hit.object.name || "";
+                            const isHitBox = name.includes("HitBox");
+                            const isPlant = hit.object.userData.isPlant || (hit.object.parent && hit.object.parent.userData.isPlant);
+                            const isHelper = hit.object.type === "LineSegments" || hit.object.type === "Line";
+
+                            return !isHitBox && !isPlant && !isHelper;
+                        });
+
+                        if (validHit) {
+                            console.log(`Snapped to ${validHit.object.name} at y=${validHit.point.y.toFixed(2)}`);
+                            finalPlantPos.y = validHit.point.y;
+                        } else {
+                            console.warn("Could not find any soil mesh at this location, staying on HitBox.");
+                        }
+                    }
+
+                    plantSeed(selectedPlantForPlanting, finalPlantPos);
 
                     // Note: We keep selectedPlantForPlanting set so the user can plant multiple times.
                     // This stays active until they leave the bed view or explicitly select something else.
@@ -1253,25 +1289,37 @@
             loader.load(plant.model, (gltf) => {
                 const plantModel = gltf.scene;
 
-                // Position at the clicked point
-                plantModel.position.copy(position);
+                // 1. Create a pivot group to ensure growth starts from the bottom
+                const pivot = new THREE.Group();
+                pivot.position.copy(position);
 
-                // Adjust height: user mentioned it was too high, so I increased offset slightly
-                // to avoid clipping ifHitBox is exactly on top, but effectively reduced relative to origin.
-                plantModel.position.y += 0.6;
+                // 2. Align the internal model so its absolute bottom is at (0,0,0) of the pivot
+                const box = new THREE.Box3().setFromObject(plantModel);
+                const bottomOffset = box.min.y;
+                plantModel.position.y = -bottomOffset; // local shift
 
-                // Add some randomness to rotation for variety
-                plantModel.rotation.y = Math.random() * Math.PI * 2;
+                // 3. User adjustments (subtle base + per-plant yOffset)
+                pivot.position.y += 0.02 + (plant.yOffset || 0);
 
-                // Scale up significantly to ensure they are visible!
-                plantModel.scale.set(0.1, 0.1, 0.1);
-                gsap.to(plantModel.scale, { x: 1.0, y: 1.0, z: 1.0, duration: 1, ease: 'back.out(1.7)' });
+                // 4. Random rotation on pivot
+                pivot.rotation.y = Math.random() * Math.PI * 2;
 
-                scene.add(plantModel);
-                gardenGroup.add(plantModel);
+                // 5. Add model to pivot, pivot to group/scene
+                pivot.userData.isPlant = true;
+                pivot.add(plantModel);
+                scene.add(pivot);
+                gardenGroup.add(pivot);
+
+                // 6. Growth animation on the pivot (ensures base stays pinned)
+                const targetScale = plant.scale || 1.0;
+                pivot.scale.set(targetScale * 0.1, targetScale * 0.1, targetScale * 0.1);
+                gsap.to(pivot.scale, {
+                    x: targetScale, y: targetScale, z: targetScale,
+                    duration: 1, ease: 'back.out(1.7)'
+                });
 
                 console.log(`[SUCCESS] ${plant.name} added at:`,
-                    `x:${plantModel.position.x.toFixed(2)}, y:${plantModel.position.y.toFixed(2)}, z:${plantModel.position.z.toFixed(2)}`
+                    `x:${pivot.position.x.toFixed(2)}, y:${pivot.position.y.toFixed(2)}, z:${pivot.position.z.toFixed(2)}`
                 );
             }, undefined, (error) => {
                 console.error(`[ERROR] Failed to load model for ${plant.name}:`, error);
