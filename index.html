@@ -1064,7 +1064,20 @@
                 console.log(`Intersections with ${currentZoomedBed.name}:`, intersects.length);
 
                 if (intersects.length > 0) {
-                    const hitPoint = intersects[0].point;
+                    const hit = intersects[0];
+                    const hitPoint = hit.point;
+
+                    // Filter: only allow planting on surfaces facing UP
+                    const worldNormal = hit.face.normal.clone();
+                    const worldQuat = new THREE.Quaternion();
+                    hit.object.getWorldQuaternion(worldQuat);
+                    worldNormal.applyQuaternion(worldQuat);
+
+                    if (worldNormal.y < 0.7) {
+                        console.warn("Ignoring click: Hit surface is too vertical (Normal Y:", worldNormal.y.toFixed(2), ")");
+                        return;
+                    }
+
                     console.log(`Planting hit at: x=${hitPoint.x.toFixed(2)}, y=${hitPoint.y.toFixed(2)}, z=${hitPoint.z.toFixed(2)}`);
                     plantSeed(selectedPlantForPlanting, hitPoint);
 
