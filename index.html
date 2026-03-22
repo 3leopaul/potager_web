@@ -981,6 +981,11 @@
             "HitBox_4": {
                 title: "Carré de Radis",
                 description: "Radis de 18 jours. Croquants et rafraîchissants. Semis réguliers pour une récolte continue toute saison."
+            },
+            "HitBox_12": {
+                title: "Zone Plate",
+                description: "Une zone de plantation de pour des arbustes & arbres",
+                isFlat: true
             }
         };
 
@@ -994,10 +999,16 @@
             { id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15 },
             { id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1 },
             { id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0 },
-            { id: 'plant1', name: 'Plante Verte', model: './3dModels/plants/plant1.glb', icon: '🌳', description: 'Une grande plante robuste', scale: 1.0 },
             { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0 },
             { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0 },
             { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0 },
+            { id: 'pine_tree', name: 'Grand Sapin', model: './3dModels/plants/pine_tree.glb', icon: '🌲', description: 'Idéal pour le HitBox_12', scale: 0.02, yOffset: -0.1 },
+            // Random mix entry
+            { id: 'flowers_mix', name: 'Mélange de Fleurs', icon: '🌸', description: 'Un mélange aléatoire de fleurs colorées.', isMix: true, subTypes: ['flower1', 'flower2', 'flower3'] },
+            // Individual flower sub-types (hidden from grid)
+            { id: 'flower1', model: './3dModels/plants/flowers1.glb', scale: 0.05, isHidden: true },
+            { id: 'flower2', model: './3dModels/plants/flowers2.glb', scale: 0.02, isHidden: true },
+            { id: 'flower3', model: './3dModels/plants/flowers3.glb', scale: 0.02, isHidden: true }
         ];
 
         // --- PERFORMANCE OPTIMIZATION: INSTANCING ---
@@ -1081,12 +1092,23 @@
                 );
 
                 // Create a single hitbox InstancedMesh per plant type
+                const hitboxGeo = new THREE.BoxGeometry(this.hitboxSize.x, this.hitboxSize.y, this.hitboxSize.z);
+                // KEY FIX: Override the geometry's bounding sphere with an enormous one.
+                // Three.js raycasts InstancedMesh in two steps:
+                //   1. Tests the geometry's bounding sphere (in world space at the mesh origin).
+                //   2. Only if that passes, tests each individual instance matrix.
+                // Since our hitbox mesh sits at origin but instances are placed across the garden,
+                // the default tiny bounding sphere always FAILS step 1 and Three.js never
+                // checks individual instances — making the hitboxes appear invisible to raycasting.
+                // Setting a radius-1000 sphere ensures step 1 always passes.
+                hitboxGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 1000);
+
                 this.hitboxMesh = new THREE.InstancedMesh(
-                    new THREE.BoxGeometry(this.hitboxSize.x, this.hitboxSize.y, this.hitboxSize.z),
+                    hitboxGeo,
                     new THREE.MeshBasicMaterial({
                         color: 0x00ff00,
                         transparent: true,
-                        opacity: 0.001,  // near-invisible but still raycastable
+                        opacity: 0,        // start invisible — setHarvestMode enables them
                         depthWrite: false,
                         side: THREE.DoubleSide,
                     }),
@@ -1220,25 +1242,37 @@
 
                 // PRE-FETCH plant GLTF data in the background (no GPU objects yet)
                 let loadedCount = 0;
-                const uniqueModels = [...new Map(plantsData.map(p => [p.model, p])).values()];
+                const uniqueModels = [...new Map(plantsData.filter(p => p.model).map(p => [p.model, p])).values()];
                 uniqueModels.forEach(plant => {
-                    loader.load(plant.model, (gltf) => {
-                        // Only cache the scene — NO InstancedMesh created here
-                        plantGltfCache[plant.id] = gltf.scene;
+                    loader.load(plant.model,
+                        (gltf) => {
+                            // Only cache the scene — NO InstancedMesh created here
+                            plantGltfCache[plant.id] = gltf.scene;
 
-                        // For plants sharing the same model file, cache under each id
-                        plantsData.filter(p => p.model === plant.model).forEach(p => {
-                            plantGltfCache[p.id] = gltf.scene;
-                        });
+                            // For plants sharing the same model file, cache under each id
+                            plantsData.filter(p => p.model === plant.model).forEach(p => {
+                                plantGltfCache[p.id] = gltf.scene;
+                            });
 
-                        loadedCount++;
-                        if (loadedCount === uniqueModels.length) {
-                            console.log("Plant GLTF data cached. InstancedMesh will be created on first use.");
-                            const loadingScreen = document.getElementById('loading-screen');
-                            loadingScreen.classList.add('hidden');
-                            setTimeout(() => loadingScreen.style.display = 'none', 600);
+                            loadedCount++;
+                            if (loadedCount === uniqueModels.length) {
+                                console.log("Plant GLTF data cached. InstancedMesh will be created on first use.");
+                                const loadingScreen = document.getElementById('loading-screen');
+                                loadingScreen.classList.add('hidden');
+                                setTimeout(() => loadingScreen.style.display = 'none', 600);
+                            }
+                        },
+                        undefined,
+                        (err) => {
+                            console.error(`Error loading plant model ${plant.model}:`, err);
+                            loadedCount++; // Increment anyway so loading screen doesn't hang
+                            if (loadedCount === uniqueModels.length) {
+                                const loadingScreen = document.getElementById('loading-screen');
+                                loadingScreen.classList.add('hidden');
+                                setTimeout(() => loadingScreen.style.display = 'none', 600);
+                            }
                         }
-                    });
+                    );
                 });
             },
             function (xhr) {
@@ -1474,7 +1508,10 @@
                     const snapIntersects = snapRay.intersectObjects(scene.children, true);
                     let finalPlantPos = hitPoint.clone();
 
-                    if (snapIntersects.length > 0) {
+                    if (bedData[currentZoomedBed.name]?.isFlat) {
+                        console.log(`[FLAT PLACEMENT] Setting y=0 for ${currentZoomedBed.name}`);
+                        finalPlantPos.y = 0;
+                    } else if (snapIntersects.length > 0) {
                         // Find the highest point that is NOT a hitbox, NOT a plant, and NOT the background/lines
                         const validHit = snapIntersects.find(hit => {
                             const name = (hit.object.name || "").toLowerCase();
@@ -1502,7 +1539,16 @@
                         }
                     }
 
-                    plantSeed(selectedPlantForPlanting, finalPlantPos);
+                    let finalPlantToPlant = selectedPlantForPlanting;
+
+                    // IF it's a mix, randomly pick a sub-type BEFORE planting
+                    if (selectedPlantForPlanting.isMix) {
+                        const randomId = selectedPlantForPlanting.subTypes[Math.floor(Math.random() * selectedPlantForPlanting.subTypes.length)];
+                        finalPlantToPlant = plantsData.find(p => p.id === randomId);
+                        console.log(`[MIX] Planting random sub-type: ${randomId}`);
+                    }
+
+                    plantSeed(finalPlantToPlant, finalPlantPos);
 
                     // Note: We keep selectedPlantForPlanting set so the user can plant multiple times.
                     // This stays active until they leave the bed view or explicitly select something else.
@@ -1681,6 +1727,8 @@
             grid.innerHTML = '';
 
             plantsData.forEach(plant => {
+                if (plant.isHidden) return; // Skip sub-types
+
                 const card = document.createElement('div');
                 card.className = 'plant-card';
                 card.innerHTML = `

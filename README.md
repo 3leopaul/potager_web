@@ -35,6 +35,7 @@ The garden contains **9 clickable garden beds**, each with metadata:
 | HitBox_2 | Carré de Salades |
 | HitBox_3 | Carré de Carottes |
 | HitBox_4 | Carré de Radis | (Place Holder names)
+| HitBox_12 | Zone Plate | Flat ground area (y=0) |
 
 **Clicking or tapping** a bed:
 - Animates the camera to zoom in on the chosen bed.
