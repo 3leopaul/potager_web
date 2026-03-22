@@ -977,10 +977,18 @@
 
         const plantsData = [
             { id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1 },
-            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges' },
-            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Salade croquante', scale: 1.0 },
-            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🌿', description: 'Herbe aromatique' },
-            { id: 'plant1', name: 'Plante Verte', model: './3dModels/plants/plant1.glb', icon: '🌳', description: 'Une grande plante robuste' },
+            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0 },
+            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3 },
+            { id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0 },
+            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0 },
+            { id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1 },
+            { id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15 },
+            { id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1 },
+            { id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0 },
+            { id: 'plant1', name: 'Plante Verte', model: './3dModels/plants/plant1.glb', icon: '🌳', description: 'Une grande plante robuste', scale: 1.0 },
+            { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0 },
+            { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0 },
+            { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0 },
         ];
 
         // --- PERFORMANCE OPTIMIZATION: INSTANCING ---
@@ -1000,7 +1008,18 @@
                 this.count = 0;
 
                 // Calculate the bottom offset so the plant sits on the soil
-                const box = new THREE.Box3().setFromObject(cachedScene);
+                let box = new THREE.Box3().setFromObject(cachedScene);
+
+                // Apply base rotation if specified in config
+                const baseRotationMatrix = new THREE.Matrix4();
+                if (this.config.xRotation) baseRotationMatrix.multiply(new THREE.Matrix4().makeRotationX(this.config.xRotation));
+                if (this.config.yRotationOffset) baseRotationMatrix.multiply(new THREE.Matrix4().makeRotationY(this.config.yRotationOffset));
+                if (this.config.zRotation) baseRotationMatrix.multiply(new THREE.Matrix4().makeRotationZ(this.config.zRotation));
+
+                // If we rotated, re-calculate the box to get the new bottom
+                if (this.config.xRotation || this.config.yRotationOffset || this.config.zRotation) {
+                    box = new THREE.Box3().setFromObject(cachedScene).applyMatrix4(baseRotationMatrix);
+                }
                 this.bottomOffset = -box.min.y;
 
                 // Build one InstancedMesh per sub-mesh in the GLTF.
@@ -1024,6 +1043,9 @@
                     child.updateMatrixWorld(true);
                     const rootInverse = cachedScene.matrixWorld.clone().invert();
                     instMesh.userData.localMatrix = child.matrixWorld.clone().premultiply(rootInverse);
+
+                    // Apply base model rotation and grounding translation
+                    instMesh.userData.localMatrix.premultiply(baseRotationMatrix);
                     instMesh.userData.localMatrix.premultiply(
                         new THREE.Matrix4().makeTranslation(0, this.bottomOffset, 0)
                     );
