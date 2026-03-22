@@ -592,6 +592,15 @@
             font-weight: 400;
         }
 
+        #interaction-panel.harvest-mode {
+            border-color: #ff6b6b;
+        }
+
+        #interaction-panel.harvest-mode #btn-harvest {
+            background: rgba(255, 107, 107, 0.15);
+            border-color: #ff6b6b;
+        }
+
         @media (max-width: 600px) {
             #interaction-panel {
                 bottom: 0px;
@@ -869,11 +878,11 @@
                     <span class="btn-subtitle">En savoir plus sur ce bac</span>
                 </div>
             </button>
-            <button class="interaction-btn" id="btn-interact">
-                <span class="btn-icon">🔧</span>
+            <button class="interaction-btn" id="btn-harvest">
+                <span class="btn-icon">🧺</span>
                 <div class="btn-content">
-                    <span class="btn-title">Actions</span>
-                    <span class="btn-subtitle">Arroser, récolter...</span>
+                    <span class="btn-title">Récolter</span>
+                    <span class="btn-subtitle">Retirer une plante</span>
                 </div>
             </button>
             <button class="interaction-btn" id="btn-plant"
@@ -1009,6 +1018,7 @@
 
                 // Calculate the bottom offset so the plant sits on the soil
                 let box = new THREE.Box3().setFromObject(cachedScene);
+                this.originalBox = box.clone();
 
                 // Apply base rotation if specified in config
                 const baseRotationMatrix = new THREE.Matrix4();
@@ -1053,6 +1063,40 @@
                     scene.add(instMesh);
                     this.instancedMeshes.push(instMesh);
                 });
+
+                // --- HIT BOX FOR INTERACTION ---
+                const size = new THREE.Vector3();
+                box.getSize(size);
+                const center = new THREE.Vector3();
+                box.getCenter(center);
+
+                // Store the center offset (in model-local space, before scaling)
+                // so we can apply it in world space when setting hitbox matrix.
+                this.hitboxSize = size.clone().multiplyScalar(1.2);
+                // The center in model local space (Y already included in bottomOffset)
+                this.hitboxCenterOffset = new THREE.Vector3(
+                    center.x,
+                    center.y + this.bottomOffset,
+                    center.z
+                );
+
+                // Create a single hitbox InstancedMesh per plant type
+                this.hitboxMesh = new THREE.InstancedMesh(
+                    new THREE.BoxGeometry(this.hitboxSize.x, this.hitboxSize.y, this.hitboxSize.z),
+                    new THREE.MeshBasicMaterial({
+                        color: 0x00ff00,
+                        transparent: true,
+                        opacity: 0.001,  // near-invisible but still raycastable
+                        depthWrite: false,
+                        side: THREE.DoubleSide,
+                    }),
+                    this.maxInstances
+                );
+                this.hitboxMesh.userData.isHitbox = true;
+                this.hitboxMesh.userData.plantId = this.plantId;
+                this.hitboxMesh.count = 0;
+
+                scene.add(this.hitboxMesh);
             }
 
             addInstance(position, rotationY, targetScale) {
@@ -1074,6 +1118,7 @@
                 // Increase the visible count on every instanced mesh
                 this.count++;
                 this.instancedMeshes.forEach(m => { m.count = this.count; });
+                this.hitboxMesh.count = this.count;
                 this.updateInstanceMatrix(index);
 
                 // Growth animation
@@ -1087,6 +1132,7 @@
 
             updateInstanceMatrix(index) {
                 const data = this.instances[index];
+                if (!data) return;
                 const baseMatrix = new THREE.Matrix4().compose(
                     data.position,
                     new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), data.rotationY),
@@ -1095,6 +1141,51 @@
                 this.instancedMeshes.forEach(instMesh => {
                     instMesh.setMatrixAt(index, baseMatrix.clone().multiply(instMesh.userData.localMatrix));
                     instMesh.instanceMatrix.needsUpdate = true;
+                });
+
+                // Sync Hitbox: the hitbox is positioned at the plant center in world space.
+                // We apply the center offset AFTER scaling to avoid it being warped by scale.
+                const scaledOffset = this.hitboxCenterOffset.clone().multiplyScalar(data.currentScale);
+                const hitboxPos = data.position.clone().add(scaledOffset);
+                const hitboxMatrix = new THREE.Matrix4().compose(
+                    hitboxPos,
+                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), data.rotationY),
+                    new THREE.Vector3(data.currentScale, data.currentScale, data.currentScale)
+                );
+                this.hitboxMesh.setMatrixAt(index, hitboxMatrix);
+                this.hitboxMesh.instanceMatrix.needsUpdate = true;
+            }
+
+            removeInstance(index) {
+                if (index < 0 || index >= this.count) return;
+
+                const data = this.instances[index];
+                if (data.isRemoving) return; // Already being harvested
+                data.isRemoving = true;
+
+                // Animation out
+                gsap.to(data, {
+                    currentScale: 0.001,
+                    duration: 0.4,
+                    ease: "power2.in",
+                    onUpdate: () => this.updateInstanceMatrix(index),
+                    onComplete: () => {
+                        // Swap with last instance
+                        const lastIndex = this.count - 1;
+                        if (index < lastIndex) {
+                            this.instances[index] = this.instances[lastIndex];
+                            this.updateInstanceMatrix(index);
+                        }
+
+                        this.instances.pop();
+                        this.count--;
+                        this.instancedMeshes.forEach(m => {
+                            m.count = this.count;
+                            m.instanceMatrix.needsUpdate = true;
+                        });
+                        this.hitboxMesh.count = this.count;
+                        this.hitboxMesh.instanceMatrix.needsUpdate = true;
+                    }
                 });
             }
         }
@@ -1168,6 +1259,7 @@
         const mouse = new THREE.Vector2();
         let currentZoomedBed = null;
         let selectedPlantForPlanting = null;
+        let isHarvesting = false;
 
         import { gsap } from 'https://cdn.skypack.dev/gsap';
 
@@ -1206,6 +1298,25 @@
             mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
+            // Harvest mode: detect plant tap on mobile
+            if (isHarvesting && currentZoomedBed) {
+                raycaster.setFromCamera(mouse, camera);
+                const allHitboxes = [];
+                for (const id in plantInstanceManagers) {
+                    allHitboxes.push(plantInstanceManagers[id].hitboxMesh);
+                }
+                const intersects = raycaster.intersectObjects(allHitboxes);
+                if (intersects.length > 0) {
+                    const hit = intersects[0];
+                    const manager = plantInstanceManagers[hit.object.userData.plantId];
+                    if (manager) {
+                        manager.removeInstance(hit.instanceId);
+                        highlightBox.visible = false;
+                    }
+                }
+                return;
+            }
+
             if (currentZoomedBed) return;
 
             raycaster.setFromCamera(mouse, camera);
@@ -1216,15 +1327,33 @@
         }
 
         let currentOutline = null;
+        let plantHighlight = null;
+
+        // Shared highlight box geometry (we'll scale it)
+        const highlightGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
+        const highlightMat = new THREE.LineBasicMaterial({ color: 0xff6b6b, linewidth: 2 });
+        const highlightBox = new THREE.LineSegments(highlightGeo, highlightMat);
+        highlightBox.visible = false;
+        scene.add(highlightBox);
 
         function onMouseMove(event) {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-            if (currentZoomedBed) return;
+            if (currentZoomedBed) {
+                if (isHarvesting) {
+                    updatePlantHighlight();
+                } else {
+                    highlightBox.visible = false;
+                    document.body.style.cursor = 'default';
+                }
+                return;
+            }
 
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(gardenBeds);
+
+            // ... rest of the original bed highlight logic ...
 
             if (currentOutline) {
                 currentOutline.parent.remove(currentOutline);
@@ -1246,6 +1375,49 @@
 
                 document.body.style.cursor = 'pointer';
             } else {
+                document.body.style.cursor = 'default';
+            }
+        }
+
+        function updatePlantHighlight() {
+            raycaster.setFromCamera(mouse, camera);
+
+            const allHitboxes = [];
+            for (const id in plantInstanceManagers) {
+                allHitboxes.push(plantInstanceManagers[id].hitboxMesh);
+            }
+
+            const intersects = raycaster.intersectObjects(allHitboxes);
+            if (intersects.length > 0) {
+                const hit = intersects[0];
+                const instMesh = hit.object;
+                const instanceId = hit.instanceId;
+
+                // The hitboxMesh matrix is already set to world position (no local offset multiply)
+                const matrix = new THREE.Matrix4();
+                instMesh.getMatrixAt(instanceId, matrix);
+
+                const position = new THREE.Vector3();
+                const quaternion = new THREE.Quaternion();
+                const instanceScale = new THREE.Vector3();
+                matrix.decompose(position, quaternion, instanceScale);
+
+                highlightBox.position.copy(position);
+                highlightBox.quaternion.copy(quaternion);
+
+                // The hitbox geometry is already sized to hitboxSize, so the
+                // highlight outline (unit 1x1x1 box edge) must match that size * instance scale
+                const manager = plantInstanceManagers[instMesh.userData.plantId];
+                highlightBox.scale.set(
+                    manager.hitboxSize.x * instanceScale.x,
+                    manager.hitboxSize.y * instanceScale.y,
+                    manager.hitboxSize.z * instanceScale.z
+                );
+
+                highlightBox.visible = true;
+                document.body.style.cursor = 'pointer';
+            } else {
+                highlightBox.visible = false;
                 document.body.style.cursor = 'default';
             }
         }
@@ -1340,6 +1512,29 @@
                 }
             }
 
+            // Harvesting mode
+            if (isHarvesting && currentZoomedBed) {
+                const allHitboxes = [];
+                for (const id in plantInstanceManagers) {
+                    allHitboxes.push(plantInstanceManagers[id].hitboxMesh);
+                }
+
+                const intersects = raycaster.intersectObjects(allHitboxes);
+                if (intersects.length > 0) {
+                    const hit = intersects[0];
+                    const instMesh = hit.object;
+                    const instanceId = hit.instanceId;
+
+                    // Find who owns this mesh
+                    const manager = plantInstanceManagers[instMesh.userData.plantId];
+                    if (manager) {
+                        manager.removeInstance(instanceId);
+                        highlightBox.visible = false;
+                        return;
+                    }
+                }
+            }
+
             if (currentZoomedBed) return;
 
             const intersects = raycaster.intersectObjects(gardenBeds);
@@ -1403,6 +1598,7 @@
         window.resetView = function () {
             currentZoomedBed = null;
             selectedPlantForPlanting = null;
+            isHarvesting = false;
             document.getElementById('back-btn').style.display = 'none';
             document.getElementById('top-bar').style.opacity = '1';
             document.getElementById('title').style.display = 'block';
@@ -1413,6 +1609,8 @@
             const panel = document.getElementById('interaction-panel');
             panel.classList.remove('visible');
             panel.classList.remove('minimized');
+            panel.classList.remove('harvest-mode');
+            highlightBox.visible = false;
 
             // Disable controls during animation
             controls.enabled = false;
@@ -1560,14 +1758,41 @@
             console.log('Information requested for:', currentZoomedBed.name);
         });
 
-        document.getElementById('btn-interact').addEventListener('click', () => {
+        function setHarvestMode(active) {
+            isHarvesting = active;
+            selectedPlantForPlanting = null;
+            const panel = document.getElementById('interaction-panel');
+
+            // Enable/disable hitbox rendering and raycasting visibility
+            for (const id in plantInstanceManagers) {
+                const m = plantInstanceManagers[id].hitboxMesh;
+                m.material.opacity = active ? 0.001 : 0;
+            }
+
+            if (active) {
+                document.getElementById('interaction-subtitle').textContent = 'Mode Récolte activé';
+                document.getElementById('instruction').textContent = 'Cliquez sur une plante pour la récolter';
+                document.getElementById('instruction').style.display = 'block';
+                document.getElementById('top-bar').style.opacity = '1';
+                document.getElementById('title').style.display = 'none';
+                panel.classList.add('harvest-mode');
+                minimizeInteractionPanel(true);
+            } else {
+                highlightBox.visible = false;
+                document.getElementById('interaction-subtitle').textContent = 'Sélectionnez une action';
+                document.getElementById('instruction').textContent = 'Cliquez dans le bac pour explorer';
+                panel.classList.remove('harvest-mode');
+                minimizeInteractionPanel(false);
+            }
+        }
+
+        document.getElementById('btn-harvest').addEventListener('click', () => {
             if (!currentZoomedBed) return;
-            const bedName = currentZoomedBed.name;
-            console.log('Actions clicked for:', bedName);
-            alert(`🔧 Actions pour ${bedData[bedName]?.title || bedName}\n\nFonctionnalités à venir:\n• Arroser les plantes\n• Désherber\n• Récolter les légumes`);
+            setHarvestMode(!isHarvesting);
         });
 
         document.getElementById('btn-plant').addEventListener('click', () => {
+            setHarvestMode(false); // Turn off harvesting if planting
             openPlantModal();
         });
 
