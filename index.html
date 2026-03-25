@@ -1493,7 +1493,7 @@
                     // PERFORMANCE: Plants rarely need to receive shadows from each other in this style,
                     // disabling this saves a huge amount of fragment shader work with 1000s of instances.
                     instMesh.receiveShadow = false;
-                    instMesh.frustumCulled = true;
+                    instMesh.frustumCulled = false;
                     instMesh.userData.isPlant = true;
                     // count = 0 means Three.js renders zero instances
                     instMesh.count = 0;
@@ -1562,6 +1562,7 @@
                     }),
                     this.maxInstances
                 );
+                this.hitboxMesh.frustumCulled = false;
                 this.hitboxMesh.userData.isHitbox = true;
                 this.hitboxMesh.userData.plantId = this.plantId;
                 this.hitboxMesh.count = 0;
@@ -1694,6 +1695,7 @@
                     if (child.isMesh) {
                         child.castShadow = true;
                         child.receiveShadow = true;
+                        child.frustumCulled = false;
 
                         if (child.name.includes('HitBox')) {
                             child.material = new THREE.MeshBasicMaterial({
