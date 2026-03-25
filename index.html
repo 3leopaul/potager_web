@@ -227,20 +227,20 @@
             transition: opacity 0.4s ease;
         }
 
-        #top-bar h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--navy);
-            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6);
-            letter-spacing: -0.5px;
+        #title {
+            height: 60px;
+            width: auto;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.6));
+            display: block; /* Ensure it behaves like the previous h1 */
         }
 
         #top-bar p {
             font-size: 14px;
             color: var(--navy-light);
-            font-weight: 400;
-            opacity: 0.7;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-left: 2px;
         }
 
         /* ========== BACK BUTTON ========== */
@@ -276,13 +276,13 @@
         #loading-screen {
             position: fixed;
             inset: 0;
-            background: var(--navy);
+            background: var(--white);
             z-index: 200;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 24px;
+            gap: 16px;
             transition: opacity 0.6s ease;
         }
 
@@ -291,51 +291,46 @@
             pointer-events: none;
         }
 
-        .loading-logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--green-primary), var(--blue-accent));
-            border-radius: 20px;
+        .loading-logo-container {
+            width: min(800px, 90%);
+            height: auto;
+            max-height: 55vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            animation: pulse 1.5s ease-in-out infinite;
+            margin-bottom: 24px;
+            flex-shrink: 0;
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: scale(1.08);
-                opacity: 0.8;
-            }
+        .loading-logo-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         .loading-text {
-            color: var(--white);
+            color: var(--navy);
             font-size: 16px;
-            font-weight: 400;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            flex-shrink: 0;
         }
 
         .loading-bar-container {
-            width: 200px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
+            width: 240px;
+            height: 6px;
+            background: rgba(26, 46, 74, 0.08);
+            border-radius: 10px;
             overflow: hidden;
+            margin-top: 12px;
+            flex-shrink: 0;
         }
 
         .loading-bar {
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, var(--green-primary), var(--green-accent));
-            border-radius: 2px;
+            border-radius: 10px;
             transition: width 0.3s ease;
         }
 
@@ -418,12 +413,15 @@
                 right: 12px;
             }
 
-            #top-bar h1 {
-                font-size: 20px;
+            #title {
+                height: 42px;
             }
 
             #top-bar p {
-                display: none;
+                display: block;
+                font-size: 11px;
+                opacity: 0.9;
+                font-weight: 500;
             }
 
             #back-btn {
@@ -438,6 +436,12 @@
 
             .about-content h1 {
                 font-size: 28px;
+            }
+            
+            .loading-logo-container {
+                width: 90%;
+                max-height: 40vh;
+                margin-bottom: 16px;
             }
         }
 
@@ -478,14 +482,14 @@
             background-color: var(--white);
             transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
-        input:checked + .slider {
+        input:checked+.slider {
             background: linear-gradient(135deg, var(--green-primary), var(--green-accent));
         }
 
-        input:checked + .slider:before {
+        input:checked+.slider:before {
             transform: translateX(24px);
         }
 
@@ -815,8 +819,10 @@
 
     <!-- LOADING SCREEN -->
     <div id="loading-screen">
-        <div class="loading-logo">🌱</div>
-        <div class="loading-text">Chargement du potager...</div>
+        <div class="loading-logo-container">
+            <img src="Potager_logo.png" alt="Potager Logo" class="loading-logo-img">
+        </div>
+        <div class="loading-text">Chargement de votre potager 3D...</div>
         <div class="loading-bar-container">
             <div class="loading-bar" id="loading-bar"></div>
         </div>
@@ -880,7 +886,7 @@
     <!-- TOP BAR (3D View) -->
     <div id="top-bar">
         <div>
-            <h1 id="title">Le Potager</h1>
+            <img src="Potager_logo.png" alt="Le Potager Logo" id="title">
             <p id="instruction">Cliquez sur un bac pour l'explorer</p>
         </div>
     </div>
@@ -1123,6 +1129,16 @@
         const plantGltfCache = {};       // raw gltf.scene, keyed by plant.id
         const plantInstanceManagers = {}; // initialized lazily on first planting
 
+        // PERFORMANCE: Shared scratch objects to avoid Garbage Collection (GC) in the render loop/events
+        const _matrix = new THREE.Matrix4();
+        const _matrix2 = new THREE.Matrix4();
+        const _vector = new THREE.Vector3();
+        const _vector2 = new THREE.Vector3();
+        const _quat = new THREE.Quaternion();
+        const _snapRay = new THREE.Raycaster();
+        const _snapOrigin = new THREE.Vector3();
+        const _snapDir = new THREE.Vector3(0, -1, 0);
+
         class PlantInstanceManager {
             constructor(plantConfig, cachedScene) {
                 this.plantId = plantConfig.id;
@@ -1159,7 +1175,9 @@
                         this.maxInstances
                     );
                     instMesh.castShadow = true;
-                    instMesh.receiveShadow = true;
+                    // PERFORMANCE: Plants rarely need to receive shadows from each other in this style,
+                    // disabling this saves a huge amount of fragment shader work with 1000s of instances.
+                    instMesh.receiveShadow = false;
                     instMesh.frustumCulled = true;
                     instMesh.userData.isPlant = true;
                     // count = 0 means Three.js renders zero instances
@@ -1178,6 +1196,13 @@
 
                     scene.add(instMesh);
                     this.instancedMeshes.push(instMesh);
+
+                    // PERFORMANCE: Optimize textures on plant models
+                    if (child.material && child.material.map) {
+                        const tex = child.material.map;
+                        tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+                        tex.minFilter = THREE.LinearMipmapLinearFilter;
+                    }
                 });
 
                 // --- HIT BOX FOR INTERACTION ---
@@ -1206,7 +1231,10 @@
                 // the default tiny bounding sphere always FAILS step 1 and Three.js never
                 // checks individual instances — making the hitboxes appear invisible to raycasting.
                 // Setting a radius-1000 sphere ensures step 1 always passes.
-                hitboxGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 1000);
+                // PERFORMANCE: We set a bounding sphere that covers the whole garden area
+                // so that the InstancedMesh isn't culled prematurely, but we keep it
+                // smaller than 1000 for better engine behavior.
+                hitboxGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 200);
 
                 this.hitboxMesh = new THREE.InstancedMesh(
                     hitboxGeo,
@@ -1260,27 +1288,30 @@
             updateInstanceMatrix(index) {
                 const data = this.instances[index];
                 if (!data) return;
-                const baseMatrix = new THREE.Matrix4().compose(
-                    data.position,
-                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), data.rotationY),
-                    new THREE.Vector3(data.currentScale, data.currentScale, data.currentScale)
-                );
+
+                // Compose base matrix into shared _matrix
+                _vector.set(data.currentScale, data.currentScale, data.currentScale);
+                _quat.setFromAxisAngle(_vector2.set(0, 1, 0), data.rotationY);
+                _matrix.compose(data.position, _quat, _vector);
+
                 this.instancedMeshes.forEach(instMesh => {
-                    instMesh.setMatrixAt(index, baseMatrix.clone().multiply(instMesh.userData.localMatrix));
+                    // Multiply with local sub-mesh transform using shared _matrix2
+                    _matrix2.copy(_matrix).multiply(instMesh.userData.localMatrix);
+                    instMesh.setMatrixAt(index, _matrix2);
                     instMesh.instanceMatrix.needsUpdate = true;
                 });
 
                 // Sync Hitbox: the hitbox is positioned at the plant center in world space.
-                // We apply the center offset AFTER scaling to avoid it being warped by scale.
-                const scaledOffset = this.hitboxCenterOffset.clone().multiplyScalar(data.currentScale);
-                const hitboxPos = data.position.clone().add(scaledOffset);
-                const hitboxMatrix = new THREE.Matrix4().compose(
-                    hitboxPos,
-                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), data.rotationY),
-                    new THREE.Vector3(data.currentScale, data.currentScale, data.currentScale)
-                );
-                this.hitboxMesh.setMatrixAt(index, hitboxMatrix);
+                _vector.copy(this.hitboxCenterOffset).multiplyScalar(data.currentScale);
+                _vector2.copy(data.position).add(_vector); // Reuse _vector2 for hitbox position
+
+                _vector.set(data.currentScale, data.currentScale, data.currentScale); // Restore scale to _vector
+                _matrix.compose(_vector2, _quat, _vector); // Re-compose _matrix for hitbox
+
+                this.hitboxMesh.setMatrixAt(index, _matrix);
                 this.hitboxMesh.instanceMatrix.needsUpdate = true;
+
+                if (typeof requestRender === 'function') requestRender();
             }
 
             removeInstance(index) {
@@ -1353,8 +1384,16 @@
                             gardenBeds.push(child);
                             child.userData.isBed = true;
                         }
+
+                        // PERFORMANCE: Limit texture memory and anisotropy on the main environment
+                        if (child.material && child.material.map) {
+                            child.material.map.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+                        }
                     }
                 });
+
+                // Initial render
+                if (typeof requestRender === 'function') requestRender();
 
                 // PRE-FETCH plant GLTF data in the background (no GPU objects yet)
                 let loadedCount = 0;
@@ -1495,25 +1534,22 @@
             // Special handling for flat zones
             if (bedData[bedName]?.isFlat) return 0;
 
-            const snapRay = new THREE.Raycaster();
-            const rayOrigin = new THREE.Vector3(wx, 100, wz);
-            const rayDir = new THREE.Vector3(0, -1, 0);
-            snapRay.set(rayOrigin, rayDir);
+            // PERFORMANCE: Reuse shared raycaster and vectors
+            _snapOrigin.set(wx, 100, wz);
+            _snapRay.set(_snapOrigin, _snapDir);
 
-            const snapIntersects = snapRay.intersectObjects(scene.children, true);
+            const snapIntersects = _snapRay.intersectObjects(scene.children, true);
             if (snapIntersects.length > 0) {
                 const validHit = snapIntersects.find(hit => {
                     const name = (hit.object.name || "").toLowerCase();
                     const isHitBox = name.includes("hitbox");
 
-                    // Check if the hit object or ANY of its parents are a plant
+                    // Avoid check on plants
                     let isPlant = false;
                     hit.object.traverseAncestors(a => { if (a.userData.isPlant) isPlant = true; });
                     if (hit.object.userData.isPlant) isPlant = true;
 
                     const isHelper = hit.object.type === "LineSegments" || hit.object.type === "Line";
-
-                    // Heuristic: identify environment meshes that should NOT be planted on
                     const isGround = name.includes("ground") || name.includes("grass") || name.includes("herbe") || name.includes("sol") || name.includes("landscape") || name.includes("plane");
 
                     return !isHitBox && !isPlant && !isHelper && !isGround;
@@ -1523,7 +1559,19 @@
             return null;
         }
 
+        // PERFORMANCE: Cache for EdgeGeometries so we don't re-calculate them every frame on hover
+        const bedEdgeCache = new Map();
+        const bedOutlineMat = new THREE.LineBasicMaterial({ color: 0x1a2e4a, linewidth: 2 });
+
+        // PERFORMANCE: Throttle for mouse move (run at ~30 FPS instead of device refresh rate)
+        let lastMoveTime = 0;
+        const MOVE_THROTTLE = 32; // ms
+
         function onMouseMove(event) {
+            const now = performance.now();
+            if (now - lastMoveTime < MOVE_THROTTLE) return;
+            lastMoveTime = now;
+
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -1540,28 +1588,42 @@
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(gardenBeds);
 
-            // ... rest of the original bed highlight logic ...
-
-            if (currentOutline) {
-                currentOutline.parent.remove(currentOutline);
-                currentOutline.geometry.dispose();
-                currentOutline.material.dispose();
-                currentOutline = null;
-            }
-
+            // 1. Handle Outlines (with Caching)
             if (intersects.length > 0) {
                 const hoveredBed = intersects[0].object;
-                const edges = new THREE.EdgesGeometry(hoveredBed.geometry, 15);
-                const outlineMat = new THREE.LineBasicMaterial({ color: 0x1a2e4a, linewidth: 2 });
-                currentOutline = new THREE.LineSegments(edges, outlineMat);
 
-                currentOutline.position.copy(hoveredBed.position);
-                currentOutline.rotation.copy(hoveredBed.rotation);
-                currentOutline.scale.copy(hoveredBed.scale);
-                hoveredBed.parent.add(currentOutline);
+                // Only recreate if it's a DIFFERENT bed
+                if (!currentOutline || currentOutline.userData.bedId !== hoveredBed.id) {
+                    // Remove old
+                    if (currentOutline) {
+                        currentOutline.parent.remove(currentOutline);
+                        currentOutline = null;
+                    }
+
+                    // Get or create cached edges
+                    if (!bedEdgeCache.has(hoveredBed.id)) {
+                        bedEdgeCache.set(hoveredBed.id, new THREE.EdgesGeometry(hoveredBed.geometry, 15));
+                    }
+
+                    const edges = bedEdgeCache.get(hoveredBed.id);
+                    currentOutline = new THREE.LineSegments(edges, bedOutlineMat);
+                    currentOutline.userData.bedId = hoveredBed.id;
+
+                    currentOutline.position.copy(hoveredBed.position);
+                    currentOutline.rotation.copy(hoveredBed.rotation);
+                    currentOutline.scale.copy(hoveredBed.scale);
+                    hoveredBed.parent.add(currentOutline);
+
+                    if (typeof requestRender === 'function') requestRender();
+                }
 
                 document.body.style.cursor = 'pointer';
             } else {
+                if (currentOutline) {
+                    currentOutline.parent.remove(currentOutline);
+                    currentOutline = null;
+                    if (typeof requestRender === 'function') requestRender();
+                }
                 document.body.style.cursor = 'default';
             }
         }
@@ -1569,36 +1631,33 @@
         function updatePlantHighlight() {
             raycaster.setFromCamera(mouse, camera);
 
-            const allHitboxes = [];
+            // PERFORMANCE: Only raycast against hitboxes that actually have plants
+            const activeHitboxes = [];
             for (const id in plantInstanceManagers) {
-                allHitboxes.push(plantInstanceManagers[id].hitboxMesh);
+                const manager = plantInstanceManagers[id];
+                if (manager.count > 0) {
+                    activeHitboxes.push(manager.hitboxMesh);
+                }
             }
 
-            const intersects = raycaster.intersectObjects(allHitboxes);
+            const intersects = raycaster.intersectObjects(activeHitboxes);
             if (intersects.length > 0) {
                 const hit = intersects[0];
                 const instMesh = hit.object;
                 const instanceId = hit.instanceId;
 
-                // The hitboxMesh matrix is already set to world position (no local offset multiply)
-                const matrix = new THREE.Matrix4();
-                instMesh.getMatrixAt(instanceId, matrix);
+                // PERFORMANCE: Reuse shared _matrix, _vector, _quat for visual placement
+                instMesh.getMatrixAt(instanceId, _matrix);
+                _matrix.decompose(_vector, _quat, _vector2); // Decompose into shared objects
 
-                const position = new THREE.Vector3();
-                const quaternion = new THREE.Quaternion();
-                const instanceScale = new THREE.Vector3();
-                matrix.decompose(position, quaternion, instanceScale);
+                highlightBox.position.copy(_vector);
+                highlightBox.quaternion.copy(_quat);
 
-                highlightBox.position.copy(position);
-                highlightBox.quaternion.copy(quaternion);
-
-                // The hitbox geometry is already sized to hitboxSize, so the
-                // highlight outline (unit 1x1x1 box edge) must match that size * instance scale
                 const manager = plantInstanceManagers[instMesh.userData.plantId];
                 highlightBox.scale.set(
-                    manager.hitboxSize.x * instanceScale.x,
-                    manager.hitboxSize.y * instanceScale.y,
-                    manager.hitboxSize.z * instanceScale.z
+                    manager.hitboxSize.x * _vector2.x,
+                    manager.hitboxSize.y * _vector2.y,
+                    manager.hitboxSize.z * _vector2.z
                 );
 
                 highlightBox.visible = true;
@@ -2086,13 +2145,35 @@
             openPlantModal();
         });
 
-        // 4. RENDER LOOP
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
+        // 4. PERFORMANCE: DEMAND-BASED RENDER LOOP
+        // Instead of 60fps constant, we only render when the camera moves or models update.
+        let renderRequested = false;
+
+        window.requestRender = function () {
+            if (!renderRequested) {
+                renderRequested = true;
+                requestAnimationFrame(render);
+            }
+        };
+
+        function render() {
+            renderRequested = false;
+
+            // Only update controls if needed (damping requires constant updates while moving)
+            const needsMoreFrames = controls.update();
             renderer.render(scene, camera);
+
+            // If controls are still damping (smoothing out), keep rendering
+            if (needsMoreFrames) {
+                requestRender();
+            }
         }
-        animate();
+
+        // Catch camera movements
+        controls.addEventListener('change', requestRender);
+
+        // Initial frame
+        requestRender();
 
         // Export / Import Functionality
         window.exportPotager = function () {
@@ -2230,6 +2311,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            requestRender();
         });
     </script>
 </body>
