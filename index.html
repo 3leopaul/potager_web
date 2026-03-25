@@ -967,20 +967,48 @@
         // Data for each garden bed - Add your own entries here!
         const bedData = {
             "HitBox_1": {
-                title: "Carré de Tomates",
-                description: "Les tomates aiment le soleil et beaucoup d'eau. Variété: Cœur de Bœuf. Plantation en mai, récolte en août."
+                title: "Bac n°1",
+                description: "Un bac pour planter des plantes"
             },
             "HitBox_2": {
-                title: "Carré de Salades",
-                description: "Salades variées pour toute la saison. Arrosage régulier nécessaire. Récolte tous les 15 jours."
+                title: "Bac n°2",
+                description: "Un bac pour planter des plantes"
             },
             "HitBox_3": {
-                title: "Carré de Carottes",
-                description: "Carottes nantaises. Sol meuble requis. Semis en mars, récolte en juillet."
+                title: "Bac n°3",
+                description: "Un bac pour planter des plantes"
             },
             "HitBox_4": {
-                title: "Carré de Radis",
-                description: "Radis de 18 jours. Croquants et rafraîchissants. Semis réguliers pour une récolte continue toute saison."
+                title: "Bac n°4",
+                description: "Un bac pour planter des plantes"
+            },
+            "HitBox_5": {
+                title: "Bac n°5",
+                description: "Un bac pour planter des plantes"
+            },
+            "HitBox_6": {
+                title: "Bac n°6",
+                description: "Un bac pour planter des plantes"
+            },
+            "HitBox_7": {
+                title: "Bac n°7",
+                description: "Un bac pour planter des plantes"
+            },
+            "HitBox_8": {
+                title: "Bac n°8",
+                description: "Un bac pour planter des plantes"
+            },
+            "HitBox_9": {
+                title: "Bac n°9",
+                description: "Un bac pour planter des plantes"
+            },
+            "HitBox_10": {
+                title: "Cabane",
+                description: "Cabane du potager, regorge de nombreux outils"
+            },
+            "HitBox_11": {
+                title: "Table de picinic",
+                description: "Une table pour faire des picnic au sein du potager"
             },
             "HitBox_12": {
                 title: "Zone Plate",
@@ -1595,9 +1623,14 @@
 
             // Get bed data or use defaults
             const data = bedData[bed.name] || {
-                title: bed.name || "Bac de Culture",
                 description: "Aucune information disponible pour ce bac."
             };
+
+            // Ensure title is formatted as "Bac n°X"
+            if (!data.title) {
+                const bedIndex = bed.name.replace('HitBox_', '');
+                data.title = isNaN(bedIndex) ? (bed.name || "Bac de Culture") : `Bac n°${bedIndex}`;
+            }
 
             // Update interaction panel
             document.getElementById('interaction-title').textContent = data.title;
@@ -1720,7 +1753,8 @@
         window.openPlantModal = function () {
             if (!currentZoomedBed) return;
 
-            const bedName = bedData[currentZoomedBed.name]?.title || currentZoomedBed.name;
+            const bedIndex = currentZoomedBed.name.replace('HitBox_', '');
+            const bedName = bedData[currentZoomedBed.name]?.title || (isNaN(bedIndex) ? (currentZoomedBed.name || "Bac de Culture") : `Bac n°${bedIndex}`);
             document.getElementById('modal-bed-name').textContent = `Planter dans : ${bedName}`;
 
             const grid = document.getElementById('plant-grid');
@@ -1795,9 +1829,14 @@
             if (!currentZoomedBed) return;
 
             const data = bedData[currentZoomedBed.name] || {
-                title: currentZoomedBed.name || "Bac de Culture",
                 description: "Aucune information disponible pour ce bac."
             };
+
+            // Ensure title is formatted as "Bac n°X"
+            if (!data.title) {
+                const bedIndex = currentZoomedBed.name.replace('HitBox_', '');
+                data.title = isNaN(bedIndex) ? (currentZoomedBed.name || "Bac de Culture") : `Bac n°${bedIndex}`;
+            }
 
             // For now, show an alert with the information
             // In the future, you could create a dedicated info panel
