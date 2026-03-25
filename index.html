@@ -387,6 +387,78 @@
             margin: 32px 0 12px;
         }
 
+        .map-iframe-wrapper {
+            width: 100%;
+            height: 220px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .map-iframe-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            filter: invert(90%) hue-rotate(180deg) brightness(0.9);
+            /* Dark mode map effect */
+        }
+
+        .map-card {
+            margin-top: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--teal-logo);
+            transform: translateY(-2px);
+        }
+
+        .map-icon-wrapper {
+            width: 54px;
+            height: 54px;
+            background: var(--blue-logo);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+        }
+
+        .map-info h4 {
+            color: var(--white);
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .map-info p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 0 !important;
+        }
+
+        .map-arrow {
+            margin-left: auto;
+            color: var(--teal-logo);
+            font-size: 20px;
+            opacity: 0.6;
+        }
+
         .about-badge {
             display: inline-flex;
             align-items: center;
@@ -1038,6 +1110,25 @@
             </a>
             <a class="about-badge" href="mailto:devincidurable@devinci.fr" target="_blank">
                 📧 Email
+            </a>
+
+            <h3>📍 Localisation</h3>
+            <p>Retrouve le potager au cœur de la Defense.</p>
+
+            <div class="map-iframe-wrapper">
+                <iframe src="https://maps.google.com/maps?q=48.89369059935904,2.2381110467348453&z=15&output=embed"
+                    allowfullscreen="" loading="lazy">
+                </iframe>
+            </div>
+
+            <a href="https://www.google.com/maps/search/?api=1&query=48.89369059935904,2.2381110467348453"
+                target="_blank" class="map-card">
+                <div class="map-icon-wrapper">📍</div>
+                <div class="map-info">
+                    <h4>Voir sur Google Maps</h4>
+                    <p>Pôle Léonard de Vinci, La Défense</p>
+                </div>
+                <div class="map-arrow">→</div>
             </a>
         </div>
     </div>
