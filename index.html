@@ -11,15 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --navy: #1a2e4a;
-            --navy-light: #243d5e;
-            --green-primary: #2e8b57;
-            --green-light: #4caf50;
-            --green-accent: #7dcf8e;
-            --blue-accent: #4a9fd6;
+            --navy: #225198;
+            /* Brand Blue */
+            --navy-light: #225198;
+            /* Slightly deeper blue for depth */
+            --blue-logo: #225198;
+            --teal-logo: #06b6d4;
+            --green-logo: #84cc16;
             --white: #ffffff;
             --off-white: #f4f7f5;
-            --text-muted: #8a9bb0;
+            --text-muted: #e0f2fe;
+            /* Light blue muted text */
             --sidebar-width: 320px;
         }
 
@@ -68,7 +70,7 @@
         .sidebar-logo {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, var(--green-primary), var(--blue-accent));
+            background: linear-gradient(135deg, var(--blue-logo), var(--teal-logo), var(--green-logo));
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -85,7 +87,7 @@
 
         .sidebar-brand span {
             font-size: 12px;
-            color: var(--green-accent);
+            color: var(--teal-logo);
             font-weight: 400;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -126,8 +128,8 @@
         }
 
         .nav-item.active {
-            background: linear-gradient(135deg, rgba(46, 139, 87, 0.25), rgba(74, 159, 214, 0.15));
-            color: var(--green-accent);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.15), rgba(132, 204, 22, 0.1));
+            color: var(--teal-logo);
             font-weight: 600;
         }
 
@@ -139,14 +141,15 @@
 
         .sidebar-footer {
             padding: 20px 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--white);
+            opacity: 0.9;
             text-align: center;
         }
 
         .sidebar-footer a {
-            color: var(--green-accent);
+            color: var(--teal-logo);
             text-decoration: none;
         }
 
@@ -227,20 +230,21 @@
             transition: opacity 0.4s ease;
         }
 
-        #top-bar h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--navy);
-            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6);
-            letter-spacing: -0.5px;
+        #title {
+            height: 60px;
+            width: auto;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            display: block;
+            /* Ensure it behaves like the previous h1 */
         }
 
         #top-bar p {
             font-size: 14px;
-            color: var(--navy-light);
-            font-weight: 400;
-            opacity: 0.7;
+            color: var(--navy);
+            font-weight: 500;
+            opacity: 0.9;
+            margin-left: 2px;
         }
 
         /* ========== BACK BUTTON ========== */
@@ -276,13 +280,13 @@
         #loading-screen {
             position: fixed;
             inset: 0;
-            background: var(--navy);
+            background: var(--white);
             z-index: 200;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 24px;
+            gap: 16px;
             transition: opacity 0.6s ease;
         }
 
@@ -291,51 +295,46 @@
             pointer-events: none;
         }
 
-        .loading-logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--green-primary), var(--blue-accent));
-            border-radius: 20px;
+        .loading-logo-container {
+            width: min(800px, 90%);
+            height: auto;
+            max-height: 55vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            animation: pulse 1.5s ease-in-out infinite;
+            margin-bottom: 24px;
+            flex-shrink: 0;
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: scale(1.08);
-                opacity: 0.8;
-            }
+        .loading-logo-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         .loading-text {
-            color: var(--white);
+            color: var(--navy);
             font-size: 16px;
-            font-weight: 400;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            flex-shrink: 0;
         }
 
         .loading-bar-container {
-            width: 200px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
+            width: 240px;
+            height: 6px;
+            background: rgba(26, 46, 74, 0.08);
+            border-radius: 10px;
             overflow: hidden;
+            margin-top: 12px;
+            flex-shrink: 0;
         }
 
         .loading-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--green-primary), var(--green-accent));
-            border-radius: 2px;
+            background: linear-gradient(90deg, var(--blue-logo), var(--teal-logo), var(--green-logo));
+            border-radius: 10px;
             transition: width 0.3s ease;
         }
 
@@ -369,7 +368,7 @@
 
         .about-content .subtitle {
             font-size: 16px;
-            color: var(--green-primary);
+            color: var(--blue-logo);
             font-weight: 600;
             margin-bottom: 32px;
         }
@@ -418,12 +417,15 @@
                 right: 12px;
             }
 
-            #top-bar h1 {
-                font-size: 20px;
+            #title {
+                height: 42px;
             }
 
             #top-bar p {
-                display: none;
+                display: block;
+                font-size: 11px;
+                opacity: 0.9;
+                font-weight: 500;
             }
 
             #back-btn {
@@ -438,6 +440,12 @@
 
             .about-content h1 {
                 font-size: 28px;
+            }
+
+            .loading-logo-container {
+                width: 90%;
+                max-height: 40vh;
+                margin-bottom: 16px;
             }
         }
 
@@ -478,14 +486,14 @@
             background-color: var(--white);
             transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
-        input:checked + .slider {
-            background: linear-gradient(135deg, var(--green-primary), var(--green-accent));
+        input:checked+.slider {
+            background: linear-gradient(135deg, var(--blue-logo), var(--teal-logo), var(--green-logo));
         }
 
-        input:checked + .slider:before {
+        input:checked+.slider:before {
             transform: translateX(24px);
         }
 
@@ -495,13 +503,14 @@
             bottom: 32px;
             right: 32px;
             width: 340px;
-            background: rgba(26, 46, 74, 0.95);
+            background: rgba(34, 81, 152, 0.98);
+            /* Brand Navy */
             backdrop-filter: blur(20px);
             border-radius: 20px;
             padding: 24px;
             z-index: 60;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             transform: translateY(120%);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -509,6 +518,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            color: var(--white);
         }
 
         #interaction-panel.visible {
@@ -534,12 +544,19 @@
         }
 
         .interaction-header {
-            margin-bottom: 20px;
-            padding-bottom: 16px;
+            margin: -24px -24px 20px;
+            /* Expand to edges of panel padding */
+            padding: 24px 24px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .interaction-header:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .header-text {
@@ -576,7 +593,7 @@
 
         .panel-toggle-btn:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: var(--green-accent);
+            border-color: var(--teal-logo);
         }
 
         #interaction-panel.minimized .panel-toggle-btn {
@@ -599,7 +616,8 @@
             align-items: center;
             gap: 12px;
             padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
+            /* Slightly lighter for contrast inside navy */
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             cursor: pointer;
@@ -612,7 +630,7 @@
 
         .interaction-btn:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: var(--green-accent);
+            border-color: var(--teal-logo);
             transform: translateX(4px);
         }
 
@@ -694,8 +712,8 @@
             max-width: 600px;
             border-radius: 24px;
             padding: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 32px 64px rgba(37, 99, 235, 0.3);
             transform: scale(0.9);
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -781,8 +799,8 @@
         }
 
         .plant-card:hover {
-            background: rgba(46, 139, 87, 0.15);
-            border-color: var(--green-accent);
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--navy);
             transform: translateY(-4px);
         }
 
@@ -808,6 +826,99 @@
             font-size: 12px;
             color: var(--text-muted);
         }
+
+        /* ========== INFO TOAST ========== */
+        #info-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: rgba(34, 81, 152, 0.98); /* Brand Navy */
+            color: white;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+            border-left: 6px solid var(--green-logo);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            max-width: 420px;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(120%);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            backdrop-filter: blur(12px);
+        }
+
+        #info-toast.visible {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .toast-icon {
+            font-size: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            min-width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-content h4 {
+            font-size: 19px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: var(--white);
+        }
+
+        .toast-content p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 12px;
+        }
+
+        .toast-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .toast-tag {
+            background: rgba(132, 204, 22, 0.2);
+            color: var(--green-logo);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .toast-tag.blue {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        @media (max-width: 600px) {
+            #info-toast {
+                top: auto;
+                bottom: 100px;
+                right: 16px;
+                left: 16px;
+                max-width: none;
+                transform: translateY(150%);
+            }
+            #info-toast.visible {
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -815,8 +926,10 @@
 
     <!-- LOADING SCREEN -->
     <div id="loading-screen">
-        <div class="loading-logo">🌱</div>
-        <div class="loading-text">Chargement du potager...</div>
+        <div class="loading-logo-container">
+            <img src="Potager_logo.png" alt="Potager Logo" class="loading-logo-img">
+        </div>
+        <div class="loading-text">Chargement de votre potager 3D...</div>
         <div class="loading-bar-container">
             <div class="loading-bar" id="loading-bar"></div>
         </div>
@@ -863,7 +976,7 @@
             <div class="nav-label">Configuration</div>
             <div class="nav-item no-hover" style="cursor: default;">
                 <span class="nav-icon">🗺️</span>
-                <span style="flex: 1;">Plan Rempli</span>
+                <span style="flex: 1;">Potager Rempli (Peut faire baisser les performances)</span>
                 <label class="switch">
                     <input type="checkbox" id="toggle-filled-plan" onchange="toggleFilledPlan(this)">
                     <span class="slider"></span>
@@ -880,13 +993,13 @@
     <!-- TOP BAR (3D View) -->
     <div id="top-bar">
         <div>
-            <h1 id="title">Le Potager</h1>
+            <img src="Potager_logo.png" alt="Le Potager Logo" id="title">
             <p id="instruction">Cliquez sur un bac pour l'explorer</p>
         </div>
     </div>
 
     <!-- BACK BUTTON (zoomed view) -->
-    <button id="back-btn" onclick="resetView()">← Retour</button>
+    <button id="back-btn" onclick="resetView()">← Deselectionner</button>
 
     <!-- À PROPOS PANEL -->
     <div id="about-panel">
@@ -930,14 +1043,14 @@
     <!-- INTERACTION PANEL -->
     <div id="interaction-panel">
         <div class="panel-handle"></div>
-        <div class="interaction-header">
+        <div class="interaction-header" onclick="toggleInteractionPanel()">
             <div class="header-text">
                 <h3 id="interaction-title">Bac de Culture</h3>
                 <p id="interaction-subtitle">Sélectionnez une action</p>
             </div>
-            <button class="panel-toggle-btn" onclick="toggleInteractionPanel()">
+            <div class="panel-toggle-btn">
                 <span id="panel-chevron">▾</span>
-            </button>
+            </div>
         </div>
         <div class="interaction-buttons">
             <button class="interaction-btn" id="btn-info">
@@ -955,7 +1068,7 @@
                 </div>
             </button>
             <button class="interaction-btn" id="btn-plant"
-                style="border-color: var(--green-light); background: rgba(76, 175, 80, 0.1);">
+                style="border-color: var(--teal-logo); background: rgba(6, 182, 212, 0.1);">
                 <span class="btn-icon">🌱</span>
                 <div class="btn-content">
                     <span class="btn-title">Planter</span>
@@ -963,7 +1076,7 @@
                 </div>
             </button>
             <button class="interaction-btn" id="btn-fill"
-                style="border-color: var(--blue-accent); background: rgba(74, 159, 214, 0.1);">
+                style="border-color: var(--blue-logo); background: rgba(59, 130, 246, 0.1);">
                 <span class="btn-icon">🚜</span>
                 <div class="btn-content">
                     <span class="btn-title">Remplir le bac</span>
@@ -985,6 +1098,19 @@
             </div>
             <div class="plant-grid" id="plant-grid">
                 <!-- Plant cards will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- INFO TOAST -->
+    <div id="info-toast">
+        <div class="toast-icon" id="toast-icon">🍅</div>
+        <div class="toast-content">
+            <h4 id="toast-title">Plante</h4>
+            <p id="toast-desc">Informations sur la plante.</p>
+            <div class="toast-meta">
+                <span class="toast-tag" id="toast-season">Saison</span>
+                <span class="toast-tag blue" id="toast-where">Emplacement</span>
             </div>
         </div>
     </div>
@@ -1095,25 +1221,95 @@
         };
 
         const plantsData = [
-            { id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1, spacing: 0.6 },
-            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0, spacing: 0.8 },
-            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3, spacing: 0.6 },
-            { id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0, spacing: 0.9 },
-            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0, spacing: 0.9 },
-            { id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1, spacing: 0.6 },
-            { id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15, spacing: 0.6 },
-            { id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1, spacing: 0.6 },
-            { id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0, spacing: 0.6 },
-            { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0, spacing: 0.6 },
-            { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0, spacing: 0.6 },
-            { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0, spacing: 0.6 },
-            { id: 'pine_tree', name: 'Grand Sapin', model: './3dModels/plants/pine_tree.glb', icon: '🌲', description: 'Idéal pour le HitBox_12', scale: 0.02, yOffset: -0.1, spacing: 2.0 },
-            // Random mix entry
-            { id: 'flowers_mix', name: 'Mélange de Fleurs', icon: '🌸', description: 'Un mélange aléatoire de fleurs colorées.', isMix: true, subTypes: ['flower1', 'flower2', 'flower3'], spacing: 0.3 },
-            // Individual flower sub-types (hidden from grid)
-            { id: 'flower1', model: './3dModels/plants/flowers1.glb', scale: 0.05, isHidden: true, spacing: 0.2 },
-            { id: 'flower2', model: './3dModels/plants/flowers2.glb', scale: 0.02, isHidden: true, spacing: 0.2 },
-            { id: 'flower3', model: './3dModels/plants/flowers3.glb', scale: 0.02, isHidden: true, spacing: 0.2 }
+            { 
+                id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Sol léger et frais, sans cailloux.",
+                    season: "Mars à Septembre.",
+                    tips: "Semez une petite pincée de graines tous les 15 jours pour avoir des radis frais tout au long de la saison !"
+                }
+            },
+            { 
+                id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0, spacing: 0.8,
+                category: 'vegetable',
+                info: {
+                    where: "Ensoleillé, sol riche et bien drainé.",
+                    season: "Avril à Juin.",
+                    tips: "Retirez avec vos doigts les petites tiges qui poussent à la jonction des feuilles : cela aide les tomates à devenir plus grosses."
+                }
+            },
+            { 
+                id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Mi-ombre en été, sol frais.",
+                    season: "Février à Septembre.",
+                    tips: "Laissez bien 20cm entre chaque salade. Si elles sont trop serrées, elles n'auront pas la place de bien pousser."
+                }
+            },
+            { 
+                id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0, spacing: 0.9,
+                category: 'vegetable',
+                info: {
+                    where: "Sol riche, frais et ombragé en été.",
+                    season: "Mars-Avril ou Août-Septembre.",
+                    tips: "Coupez les feuilles une par une selon vos besoins en cuisine, de nouvelles feuilles repousseront rapidement !"
+                }
+            },
+            { 
+                id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0, spacing: 0.9,
+                category: 'herb',
+                info: {
+                    where: "Chaud et ensoleillé, craint le gel.",
+                    season: "Mai à Juin.",
+                    tips: "Coupez les petites fleurs dès qu'elles apparaissent au sommet. Si vous les laissez, le basilic perdra son parfum."
+                }
+            },
+            { 
+                id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Terre bien drainée, exposition dégagée.",
+                    season: "Octobre à Mars.",
+                    tips: "N'arrosez presque jamais ! L'ail déteste avoir les racines trop mouillées, cela risque de faire pourrir le bulbe."
+                }
+            },
+            { 
+                id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Sol léger, pas trop humide.",
+                    season: "Février à Avril.",
+                    tips: "Quand les feuilles commencent à jaunir en fin d'été, couchez-les au sol pour forcer l'oignon à bien gonfler."
+                }
+            },
+            { 
+                id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1, spacing: 0.6,
+                category: 'herb',
+                info: {
+                    where: "Mi-ombre, sol frais et riche.",
+                    season: "Mars à Août.",
+                    tips: "Mettez les graines dans un verre d'eau toute la nuit avant de les planter : elles sortiront de terre bien plus vite !"
+                }
+            },
+            { 
+                id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Sol lourd et profond.",
+                    season: "Février à Mars.",
+                    tips: "Coupez le haut de la tige dès que les premières fleurs fanent pour éviter que les pucerons noirs ne s'y installent."
+                }
+            },
+            { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0, spacing: 0.6, category: 'tree' },
+            { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0, spacing: 0.6, category: 'flower' },
+            { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0, spacing: 0.6, category: 'flower' },
+            { id: 'pine_tree', name: 'Grand Sapin', model: './3dModels/plants/pine_tree.glb', icon: '🌲', description: 'Idéal pour le HitBox_12', scale: 0.02, yOffset: -0.1, spacing: 2.0, category: 'tree' },
+            { id: 'flowers_mix', name: 'Mélange de Fleurs', icon: '🌸', description: 'Un mélange aléatoire de fleurs colorées.', isMix: true, subTypes: ['flower1', 'flower2', 'flower3'], spacing: 0.3, category: 'flower' },
+            { id: 'flower1', model: './3dModels/plants/flowers1.glb', scale: 0.05, isHidden: true, spacing: 0.2, category: 'flower' },
+            { id: 'flower2', model: './3dModels/plants/flowers2.glb', scale: 0.02, isHidden: true, spacing: 0.2, category: 'flower' },
+            { id: 'flower3', model: './3dModels/plants/flowers3.glb', scale: 0.02, isHidden: true, spacing: 0.2, category: 'flower' }
         ];
 
         // --- PERFORMANCE OPTIMIZATION: INSTANCING ---
@@ -1122,6 +1318,41 @@
         const MAX_INSTANCES_PER_PLANT = 200; // supports very large/dense garden beds
         const plantGltfCache = {};       // raw gltf.scene, keyed by plant.id
         const plantInstanceManagers = {}; // initialized lazily on first planting
+
+        // PERFORMANCE: Shared scratch objects to avoid Garbage Collection (GC) in the render loop/events
+        const _matrix = new THREE.Matrix4();
+        const _matrix2 = new THREE.Matrix4();
+        const _vector = new THREE.Vector3();
+        const _vector2 = new THREE.Vector3();
+        const _quat = new THREE.Quaternion();
+        const _snapRay = new THREE.Raycaster();
+        const _snapOrigin = new THREE.Vector3();
+        const _snapDir = new THREE.Vector3(0, -1, 0);
+
+        // --- PLANTING INFO & TRACKING ---
+        const sessionPlantedHistory = new Map(); // Key: bedName, Value: Set of plantIds
+        let toastTimeout = null;
+
+        function showPlantInfo(plant, actionType) {
+            if (!plant.info) return;
+
+            const toast = document.getElementById('info-toast');
+            const title = actionType === 'planting' ? `Conseil de culture : ${plant.name}` : `Récolte de : ${plant.name}`;
+            
+            document.getElementById('toast-icon').textContent = plant.icon;
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-desc').textContent = plant.info.tips || plant.description;
+            document.getElementById('toast-season').textContent = `📅 ${plant.info.season}`;
+            document.getElementById('toast-where').textContent = `📍 ${plant.info.where}`;
+
+            toast.classList.add('visible');
+
+            // Auto-hide after 8 seconds
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('visible');
+            }, 8000);
+        }
 
         class PlantInstanceManager {
             constructor(plantConfig, cachedScene) {
@@ -1159,7 +1390,9 @@
                         this.maxInstances
                     );
                     instMesh.castShadow = true;
-                    instMesh.receiveShadow = true;
+                    // PERFORMANCE: Plants rarely need to receive shadows from each other in this style,
+                    // disabling this saves a huge amount of fragment shader work with 1000s of instances.
+                    instMesh.receiveShadow = false;
                     instMesh.frustumCulled = true;
                     instMesh.userData.isPlant = true;
                     // count = 0 means Three.js renders zero instances
@@ -1178,6 +1411,13 @@
 
                     scene.add(instMesh);
                     this.instancedMeshes.push(instMesh);
+
+                    // PERFORMANCE: Optimize textures on plant models
+                    if (child.material && child.material.map) {
+                        const tex = child.material.map;
+                        tex.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+                        tex.minFilter = THREE.LinearMipmapLinearFilter;
+                    }
                 });
 
                 // --- HIT BOX FOR INTERACTION ---
@@ -1206,7 +1446,10 @@
                 // the default tiny bounding sphere always FAILS step 1 and Three.js never
                 // checks individual instances — making the hitboxes appear invisible to raycasting.
                 // Setting a radius-1000 sphere ensures step 1 always passes.
-                hitboxGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 1000);
+                // PERFORMANCE: We set a bounding sphere that covers the whole garden area
+                // so that the InstancedMesh isn't culled prematurely, but we keep it
+                // smaller than 1000 for better engine behavior.
+                hitboxGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 200);
 
                 this.hitboxMesh = new THREE.InstancedMesh(
                     hitboxGeo,
@@ -1260,27 +1503,30 @@
             updateInstanceMatrix(index) {
                 const data = this.instances[index];
                 if (!data) return;
-                const baseMatrix = new THREE.Matrix4().compose(
-                    data.position,
-                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), data.rotationY),
-                    new THREE.Vector3(data.currentScale, data.currentScale, data.currentScale)
-                );
+
+                // Compose base matrix into shared _matrix
+                _vector.set(data.currentScale, data.currentScale, data.currentScale);
+                _quat.setFromAxisAngle(_vector2.set(0, 1, 0), data.rotationY);
+                _matrix.compose(data.position, _quat, _vector);
+
                 this.instancedMeshes.forEach(instMesh => {
-                    instMesh.setMatrixAt(index, baseMatrix.clone().multiply(instMesh.userData.localMatrix));
+                    // Multiply with local sub-mesh transform using shared _matrix2
+                    _matrix2.copy(_matrix).multiply(instMesh.userData.localMatrix);
+                    instMesh.setMatrixAt(index, _matrix2);
                     instMesh.instanceMatrix.needsUpdate = true;
                 });
 
                 // Sync Hitbox: the hitbox is positioned at the plant center in world space.
-                // We apply the center offset AFTER scaling to avoid it being warped by scale.
-                const scaledOffset = this.hitboxCenterOffset.clone().multiplyScalar(data.currentScale);
-                const hitboxPos = data.position.clone().add(scaledOffset);
-                const hitboxMatrix = new THREE.Matrix4().compose(
-                    hitboxPos,
-                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), data.rotationY),
-                    new THREE.Vector3(data.currentScale, data.currentScale, data.currentScale)
-                );
-                this.hitboxMesh.setMatrixAt(index, hitboxMatrix);
+                _vector.copy(this.hitboxCenterOffset).multiplyScalar(data.currentScale);
+                _vector2.copy(data.position).add(_vector); // Reuse _vector2 for hitbox position
+
+                _vector.set(data.currentScale, data.currentScale, data.currentScale); // Restore scale to _vector
+                _matrix.compose(_vector2, _quat, _vector); // Re-compose _matrix for hitbox
+
+                this.hitboxMesh.setMatrixAt(index, _matrix);
                 this.hitboxMesh.instanceMatrix.needsUpdate = true;
+
+                if (typeof requestRender === 'function') requestRender();
             }
 
             removeInstance(index) {
@@ -1289,6 +1535,11 @@
                 const data = this.instances[index];
                 if (data.isRemoving) return; // Already being harvested
                 data.isRemoving = true;
+
+                // Display info on harvest if it's a vegetable/herb
+                if (this.config.category === 'vegetable' || this.config.category === 'herb') {
+                    showPlantInfo(this.config, "harvest");
+                }
 
                 // Animation out
                 gsap.to(data, {
@@ -1353,8 +1604,16 @@
                             gardenBeds.push(child);
                             child.userData.isBed = true;
                         }
+
+                        // PERFORMANCE: Limit texture memory and anisotropy on the main environment
+                        if (child.material && child.material.map) {
+                            child.material.map.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+                        }
                     }
                 });
+
+                // Initial render
+                if (typeof requestRender === 'function') requestRender();
 
                 // PRE-FETCH plant GLTF data in the background (no GPU objects yet)
                 let loadedCount = 0;
@@ -1438,19 +1697,31 @@
 
         // Touch support for mobile
         window.addEventListener('touchend', onTouchEnd);
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
+                // Trigger any highlights needed (like in harvesting)
+                if (currentZoomedBed && isHarvesting) {
+                    updatePlantHighlight();
+                    if (typeof requestRender === 'function') requestRender();
+                }
+            }
+        });
         function onTouchEnd(event) {
             if (event.touches.length > 0) return;
             const touch = event.changedTouches[0];
 
-            // Ignore if it was a drag/pan gesture
-            if (wasDragged(touch.clientX, touch.clientY)) return;
+            // Removed wasDragged check as requested to allow immediate click
 
             mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
             // Harvest mode: detect plant tap on mobile
             if (isHarvesting && currentZoomedBed) {
+                updatePlantHighlight(); // Refresh hit position before removal
                 raycaster.setFromCamera(mouse, camera);
                 const allHitboxes = [];
                 for (const id in plantInstanceManagers) {
@@ -1495,25 +1766,22 @@
             // Special handling for flat zones
             if (bedData[bedName]?.isFlat) return 0;
 
-            const snapRay = new THREE.Raycaster();
-            const rayOrigin = new THREE.Vector3(wx, 100, wz);
-            const rayDir = new THREE.Vector3(0, -1, 0);
-            snapRay.set(rayOrigin, rayDir);
+            // PERFORMANCE: Reuse shared raycaster and vectors
+            _snapOrigin.set(wx, 100, wz);
+            _snapRay.set(_snapOrigin, _snapDir);
 
-            const snapIntersects = snapRay.intersectObjects(scene.children, true);
+            const snapIntersects = _snapRay.intersectObjects(scene.children, true);
             if (snapIntersects.length > 0) {
                 const validHit = snapIntersects.find(hit => {
                     const name = (hit.object.name || "").toLowerCase();
                     const isHitBox = name.includes("hitbox");
 
-                    // Check if the hit object or ANY of its parents are a plant
+                    // Avoid check on plants
                     let isPlant = false;
                     hit.object.traverseAncestors(a => { if (a.userData.isPlant) isPlant = true; });
                     if (hit.object.userData.isPlant) isPlant = true;
 
                     const isHelper = hit.object.type === "LineSegments" || hit.object.type === "Line";
-
-                    // Heuristic: identify environment meshes that should NOT be planted on
                     const isGround = name.includes("ground") || name.includes("grass") || name.includes("herbe") || name.includes("sol") || name.includes("landscape") || name.includes("plane");
 
                     return !isHitBox && !isPlant && !isHelper && !isGround;
@@ -1523,7 +1791,53 @@
             return null;
         }
 
+        // PERFORMANCE: Cache for EdgeGeometries so we don't re-calculate them every frame on hover
+        const bedEdgeCache = new Map();
+
+        // Branded Gradient Material for hitboxes
+        const bedOutlineMat = new THREE.ShaderMaterial({
+            uniforms: {
+                color1: { value: new THREE.Color(0x3b82f6) }, // Blue
+                color2: { value: new THREE.Color(0x06b6d4) }, // Teal
+                color3: { value: new THREE.Color(0x84cc16) }  // Green
+            },
+            vertexShader: `
+                varying vec3 vPos;
+                void main() {
+                    vPos = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vPos;
+                uniform vec3 color1;
+                uniform vec3 color2;
+                uniform vec3 color3;
+                void main() {
+                    // Create a diagonal gradient effect based on local coordinates
+                    float t = clamp((vPos.x + vPos.y + vPos.z) * 0.3 + 0.5, 0.0, 1.0);
+                    vec3 color;
+                    if(t < 0.5) {
+                        color = mix(color1, color2, t * 2.0);
+                    } else {
+                        color = mix(color2, color3, (t - 0.5) * 2.0);
+                    }
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `,
+            transparent: true,
+            depthWrite: false
+        });
+
+        // PERFORMANCE: Throttle for mouse move (run at ~30 FPS instead of device refresh rate)
+        let lastMoveTime = 0;
+        const MOVE_THROTTLE = 32; // ms
+
         function onMouseMove(event) {
+            const now = performance.now();
+            if (now - lastMoveTime < MOVE_THROTTLE) return;
+            lastMoveTime = now;
+
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -1540,28 +1854,42 @@
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(gardenBeds);
 
-            // ... rest of the original bed highlight logic ...
-
-            if (currentOutline) {
-                currentOutline.parent.remove(currentOutline);
-                currentOutline.geometry.dispose();
-                currentOutline.material.dispose();
-                currentOutline = null;
-            }
-
+            // 1. Handle Outlines (with Caching)
             if (intersects.length > 0) {
                 const hoveredBed = intersects[0].object;
-                const edges = new THREE.EdgesGeometry(hoveredBed.geometry, 15);
-                const outlineMat = new THREE.LineBasicMaterial({ color: 0x1a2e4a, linewidth: 2 });
-                currentOutline = new THREE.LineSegments(edges, outlineMat);
 
-                currentOutline.position.copy(hoveredBed.position);
-                currentOutline.rotation.copy(hoveredBed.rotation);
-                currentOutline.scale.copy(hoveredBed.scale);
-                hoveredBed.parent.add(currentOutline);
+                // Only recreate if it's a DIFFERENT bed
+                if (!currentOutline || currentOutline.userData.bedId !== hoveredBed.id) {
+                    // Remove old
+                    if (currentOutline) {
+                        currentOutline.parent.remove(currentOutline);
+                        currentOutline = null;
+                    }
+
+                    // Get or create cached edges
+                    if (!bedEdgeCache.has(hoveredBed.id)) {
+                        bedEdgeCache.set(hoveredBed.id, new THREE.EdgesGeometry(hoveredBed.geometry, 15));
+                    }
+
+                    const edges = bedEdgeCache.get(hoveredBed.id);
+                    currentOutline = new THREE.LineSegments(edges, bedOutlineMat);
+                    currentOutline.userData.bedId = hoveredBed.id;
+
+                    currentOutline.position.copy(hoveredBed.position);
+                    currentOutline.rotation.copy(hoveredBed.rotation);
+                    currentOutline.scale.copy(hoveredBed.scale);
+                    hoveredBed.parent.add(currentOutline);
+
+                    if (typeof requestRender === 'function') requestRender();
+                }
 
                 document.body.style.cursor = 'pointer';
             } else {
+                if (currentOutline) {
+                    currentOutline.parent.remove(currentOutline);
+                    currentOutline = null;
+                    if (typeof requestRender === 'function') requestRender();
+                }
                 document.body.style.cursor = 'default';
             }
         }
@@ -1569,36 +1897,33 @@
         function updatePlantHighlight() {
             raycaster.setFromCamera(mouse, camera);
 
-            const allHitboxes = [];
+            // PERFORMANCE: Only raycast against hitboxes that actually have plants
+            const activeHitboxes = [];
             for (const id in plantInstanceManagers) {
-                allHitboxes.push(plantInstanceManagers[id].hitboxMesh);
+                const manager = plantInstanceManagers[id];
+                if (manager.count > 0) {
+                    activeHitboxes.push(manager.hitboxMesh);
+                }
             }
 
-            const intersects = raycaster.intersectObjects(allHitboxes);
+            const intersects = raycaster.intersectObjects(activeHitboxes);
             if (intersects.length > 0) {
                 const hit = intersects[0];
                 const instMesh = hit.object;
                 const instanceId = hit.instanceId;
 
-                // The hitboxMesh matrix is already set to world position (no local offset multiply)
-                const matrix = new THREE.Matrix4();
-                instMesh.getMatrixAt(instanceId, matrix);
+                // PERFORMANCE: Reuse shared _matrix, _vector, _quat for visual placement
+                instMesh.getMatrixAt(instanceId, _matrix);
+                _matrix.decompose(_vector, _quat, _vector2); // Decompose into shared objects
 
-                const position = new THREE.Vector3();
-                const quaternion = new THREE.Quaternion();
-                const instanceScale = new THREE.Vector3();
-                matrix.decompose(position, quaternion, instanceScale);
+                highlightBox.position.copy(_vector);
+                highlightBox.quaternion.copy(_quat);
 
-                highlightBox.position.copy(position);
-                highlightBox.quaternion.copy(quaternion);
-
-                // The hitbox geometry is already sized to hitboxSize, so the
-                // highlight outline (unit 1x1x1 box edge) must match that size * instance scale
                 const manager = plantInstanceManagers[instMesh.userData.plantId];
                 highlightBox.scale.set(
-                    manager.hitboxSize.x * instanceScale.x,
-                    manager.hitboxSize.y * instanceScale.y,
-                    manager.hitboxSize.z * instanceScale.z
+                    manager.hitboxSize.x * _vector2.x,
+                    manager.hitboxSize.y * _vector2.y,
+                    manager.hitboxSize.z * _vector2.z
                 );
 
                 highlightBox.visible = true;
@@ -1616,8 +1941,6 @@
 
             // Ignore clicks on UI elements (only react to canvas clicks)
             if (event.target !== renderer.domElement) return;
-            // Ignore if it was a drag/pan gesture
-            if (wasDragged(event.clientX, event.clientY)) return;
 
             console.log("Click Event:", {
                 selectedPlant: selectedPlantForPlanting?.name,
@@ -1729,7 +2052,7 @@
             // Update interaction panel
             document.getElementById('interaction-title').textContent = data.title;
             const panel = document.getElementById('interaction-panel');
-            panel.classList.remove('minimized');
+            panel.classList.add('minimized'); // Default to closed/minimized
             panel.classList.add('visible');
 
             // Log the bed name so user can add it to bedData
@@ -1748,7 +2071,8 @@
             gsap.to(camera.position, {
                 x: targetPos.x, y: targetPos.y, z: targetPos.z,
                 duration: 1.5,
-                ease: "power2.inOut"
+                ease: "power2.inOut",
+                onUpdate: requestRender
             });
 
             // Animate controls target to look at the bed
@@ -1756,6 +2080,7 @@
                 x: bed.position.x, y: bed.position.y, z: bed.position.z,
                 duration: 1.5,
                 ease: "power2.inOut",
+                onUpdate: requestRender,
                 onComplete: () => {
                     document.getElementById('top-bar').style.opacity = '0';
                     document.getElementById('back-btn').style.display = 'flex';
@@ -1763,6 +2088,24 @@
                     document.getElementById('title').style.display = 'none';
                     document.getElementById('instruction').style.display = 'none';
                     controls.enabled = true;
+
+                    // Show branded outline on the focused bed (essential for mobile)
+                    if (currentOutline) {
+                        currentOutline.parent.remove(currentOutline);
+                        currentOutline = null;
+                    }
+                    if (!bedEdgeCache.has(bed.id)) {
+                        bedEdgeCache.set(bed.id, new THREE.EdgesGeometry(bed.geometry, 15));
+                    }
+                    const edges = bedEdgeCache.get(bed.id);
+                    currentOutline = new THREE.LineSegments(edges, bedOutlineMat);
+                    currentOutline.userData.bedId = bed.id;
+                    currentOutline.position.copy(bed.position);
+                    currentOutline.rotation.copy(bed.rotation);
+                    currentOutline.scale.copy(bed.scale);
+                    bed.parent.add(currentOutline);
+
+                    if (typeof requestRender === 'function') requestRender();
                     console.log(`Zoomed into Bed #${bed.userData.id}`);
                 }
             });
@@ -1785,6 +2128,12 @@
             panel.classList.remove('harvest-mode');
             highlightBox.visible = false;
 
+            // Remove outline if exists
+            if (currentOutline) {
+                currentOutline.parent.remove(currentOutline);
+                currentOutline = null;
+            }
+
             // Disable controls during animation
             controls.enabled = false;
 
@@ -1792,13 +2141,15 @@
             gsap.to(camera.position, {
                 x: 0, y: 20, z: 30,
                 duration: 1.5,
-                ease: "power2.inOut"
+                ease: "power2.inOut",
+                onUpdate: requestRender
             });
 
             gsap.to(controls.target, {
                 x: 0, y: 0, z: 0,
                 duration: 1.5,
                 ease: "power2.inOut",
+                onUpdate: requestRender,
                 onComplete: () => {
                     controls.enabled = true;
                 }
@@ -1920,9 +2271,18 @@
 
             manager.addInstance(position, rotationY, targetScale);
 
+            // Trigger info Toast for vegetables/herbs on the FIRST plant of this type in this bed
+            const bedName = currentZoomedBed.name;
+            if (!sessionPlantedHistory.has(bedName)) sessionPlantedHistory.set(bedName, new Set());
+            const alreadyPlanted = sessionPlantedHistory.get(bedName);
+            
+            if (!alreadyPlanted.has(plant.id) && (plant.category === 'vegetable' || plant.category === 'herb')) {
+                showPlantInfo(plant, "planting");
+                alreadyPlanted.add(plant.id);
+            }
+
             console.log(`[INSTANCED] ${plant.name} added at:`,
                 `x:${position.x.toFixed(2)}, y:${position.y.toFixed(2)}, z:${position.z.toFixed(2)}`
-
             );
         }
 
@@ -2086,13 +2446,35 @@
             openPlantModal();
         });
 
-        // 4. RENDER LOOP
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
+        // 4. PERFORMANCE: DEMAND-BASED RENDER LOOP
+        // Instead of 60fps constant, we only render when the camera moves or models update.
+        let renderRequested = false;
+
+        window.requestRender = function () {
+            if (!renderRequested) {
+                renderRequested = true;
+                requestAnimationFrame(render);
+            }
+        };
+
+        function render() {
+            renderRequested = false;
+
+            // Only update controls if needed (damping requires constant updates while moving)
+            const needsMoreFrames = controls.update();
             renderer.render(scene, camera);
+
+            // If controls are still damping (smoothing out), keep rendering
+            if (needsMoreFrames) {
+                requestRender();
+            }
         }
-        animate();
+
+        // Catch camera movements
+        controls.addEventListener('change', requestRender);
+
+        // Initial frame
+        requestRender();
 
         // Export / Import Functionality
         window.exportPotager = function () {
@@ -2230,6 +2612,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            requestRender();
         });
     </script>
 </body>
