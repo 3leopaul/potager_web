@@ -11,15 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --navy: #1a2e4a;
-            --navy-light: #243d5e;
-            --green-primary: #2e8b57;
-            --green-light: #4caf50;
-            --green-accent: #7dcf8e;
-            --blue-accent: #4a9fd6;
+            --navy: #225198;
+            /* Brand Blue */
+            --navy-light: #225198;
+            /* Slightly deeper blue for depth */
+            --blue-logo: #225198;
+            --teal-logo: #06b6d4;
+            --green-logo: #84cc16;
             --white: #ffffff;
             --off-white: #f4f7f5;
-            --text-muted: #8a9bb0;
+            --text-muted: #e0f2fe;
+            /* Light blue muted text */
             --sidebar-width: 320px;
         }
 
@@ -68,7 +70,7 @@
         .sidebar-logo {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, var(--green-primary), var(--blue-accent));
+            background: linear-gradient(135deg, var(--blue-logo), var(--teal-logo), var(--green-logo));
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -85,7 +87,7 @@
 
         .sidebar-brand span {
             font-size: 12px;
-            color: var(--green-accent);
+            color: var(--teal-logo);
             font-weight: 400;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -126,8 +128,8 @@
         }
 
         .nav-item.active {
-            background: linear-gradient(135deg, rgba(46, 139, 87, 0.25), rgba(74, 159, 214, 0.15));
-            color: var(--green-accent);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.15), rgba(132, 204, 22, 0.1));
+            color: var(--teal-logo);
             font-weight: 600;
         }
 
@@ -139,14 +141,15 @@
 
         .sidebar-footer {
             padding: 20px 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--white);
+            opacity: 0.9;
             text-align: center;
         }
 
         .sidebar-footer a {
-            color: var(--green-accent);
+            color: var(--teal-logo);
             text-decoration: none;
         }
 
@@ -231,15 +234,16 @@
             height: 60px;
             width: auto;
             margin-bottom: 4px;
-            filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.6));
-            display: block; /* Ensure it behaves like the previous h1 */
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            display: block;
+            /* Ensure it behaves like the previous h1 */
         }
 
         #top-bar p {
             font-size: 14px;
-            color: var(--navy-light);
+            color: var(--navy);
             font-weight: 500;
-            opacity: 0.8;
+            opacity: 0.9;
             margin-left: 2px;
         }
 
@@ -329,7 +333,7 @@
         .loading-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--green-primary), var(--green-accent));
+            background: linear-gradient(90deg, var(--blue-logo), var(--teal-logo), var(--green-logo));
             border-radius: 10px;
             transition: width 0.3s ease;
         }
@@ -364,7 +368,7 @@
 
         .about-content .subtitle {
             font-size: 16px;
-            color: var(--green-primary);
+            color: var(--blue-logo);
             font-weight: 600;
             margin-bottom: 32px;
         }
@@ -437,7 +441,7 @@
             .about-content h1 {
                 font-size: 28px;
             }
-            
+
             .loading-logo-container {
                 width: 90%;
                 max-height: 40vh;
@@ -486,7 +490,7 @@
         }
 
         input:checked+.slider {
-            background: linear-gradient(135deg, var(--green-primary), var(--green-accent));
+            background: linear-gradient(135deg, var(--blue-logo), var(--teal-logo), var(--green-logo));
         }
 
         input:checked+.slider:before {
@@ -499,13 +503,14 @@
             bottom: 32px;
             right: 32px;
             width: 340px;
-            background: rgba(26, 46, 74, 0.95);
+            background: rgba(34, 81, 152, 0.98);
+            /* Brand Navy */
             backdrop-filter: blur(20px);
             border-radius: 20px;
             padding: 24px;
             z-index: 60;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             transform: translateY(120%);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -513,6 +518,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            color: var(--white);
         }
 
         #interaction-panel.visible {
@@ -538,12 +544,19 @@
         }
 
         .interaction-header {
-            margin-bottom: 20px;
-            padding-bottom: 16px;
+            margin: -24px -24px 20px;
+            /* Expand to edges of panel padding */
+            padding: 24px 24px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .interaction-header:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .header-text {
@@ -580,7 +593,7 @@
 
         .panel-toggle-btn:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: var(--green-accent);
+            border-color: var(--teal-logo);
         }
 
         #interaction-panel.minimized .panel-toggle-btn {
@@ -603,7 +616,8 @@
             align-items: center;
             gap: 12px;
             padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
+            /* Slightly lighter for contrast inside navy */
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             cursor: pointer;
@@ -616,7 +630,7 @@
 
         .interaction-btn:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: var(--green-accent);
+            border-color: var(--teal-logo);
             transform: translateX(4px);
         }
 
@@ -698,8 +712,8 @@
             max-width: 600px;
             border-radius: 24px;
             padding: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 32px 64px rgba(37, 99, 235, 0.3);
             transform: scale(0.9);
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -785,8 +799,8 @@
         }
 
         .plant-card:hover {
-            background: rgba(46, 139, 87, 0.15);
-            border-color: var(--green-accent);
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--navy);
             transform: translateY(-4px);
         }
 
@@ -869,7 +883,7 @@
             <div class="nav-label">Configuration</div>
             <div class="nav-item no-hover" style="cursor: default;">
                 <span class="nav-icon">🗺️</span>
-                <span style="flex: 1;">Plan Rempli</span>
+                <span style="flex: 1;">Potager Rempli (Peut faire baisser les performances)</span>
                 <label class="switch">
                     <input type="checkbox" id="toggle-filled-plan" onchange="toggleFilledPlan(this)">
                     <span class="slider"></span>
@@ -892,7 +906,7 @@
     </div>
 
     <!-- BACK BUTTON (zoomed view) -->
-    <button id="back-btn" onclick="resetView()">← Retour</button>
+    <button id="back-btn" onclick="resetView()">← Deselectionner</button>
 
     <!-- À PROPOS PANEL -->
     <div id="about-panel">
@@ -936,14 +950,14 @@
     <!-- INTERACTION PANEL -->
     <div id="interaction-panel">
         <div class="panel-handle"></div>
-        <div class="interaction-header">
+        <div class="interaction-header" onclick="toggleInteractionPanel()">
             <div class="header-text">
                 <h3 id="interaction-title">Bac de Culture</h3>
                 <p id="interaction-subtitle">Sélectionnez une action</p>
             </div>
-            <button class="panel-toggle-btn" onclick="toggleInteractionPanel()">
+            <div class="panel-toggle-btn">
                 <span id="panel-chevron">▾</span>
-            </button>
+            </div>
         </div>
         <div class="interaction-buttons">
             <button class="interaction-btn" id="btn-info">
@@ -961,7 +975,7 @@
                 </div>
             </button>
             <button class="interaction-btn" id="btn-plant"
-                style="border-color: var(--green-light); background: rgba(76, 175, 80, 0.1);">
+                style="border-color: var(--teal-logo); background: rgba(6, 182, 212, 0.1);">
                 <span class="btn-icon">🌱</span>
                 <div class="btn-content">
                     <span class="btn-title">Planter</span>
@@ -969,7 +983,7 @@
                 </div>
             </button>
             <button class="interaction-btn" id="btn-fill"
-                style="border-color: var(--blue-accent); background: rgba(74, 159, 214, 0.1);">
+                style="border-color: var(--blue-logo); background: rgba(59, 130, 246, 0.1);">
                 <span class="btn-icon">🚜</span>
                 <div class="btn-content">
                     <span class="btn-title">Remplir le bac</span>
@@ -1477,19 +1491,31 @@
 
         // Touch support for mobile
         window.addEventListener('touchend', onTouchEnd);
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
+                // Trigger any highlights needed (like in harvesting)
+                if (currentZoomedBed && isHarvesting) {
+                    updatePlantHighlight();
+                    if (typeof requestRender === 'function') requestRender();
+                }
+            }
+        });
         function onTouchEnd(event) {
             if (event.touches.length > 0) return;
             const touch = event.changedTouches[0];
 
-            // Ignore if it was a drag/pan gesture
-            if (wasDragged(touch.clientX, touch.clientY)) return;
+            // Removed wasDragged check as requested to allow immediate click
 
             mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
             // Harvest mode: detect plant tap on mobile
             if (isHarvesting && currentZoomedBed) {
+                updatePlantHighlight(); // Refresh hit position before removal
                 raycaster.setFromCamera(mouse, camera);
                 const allHitboxes = [];
                 for (const id in plantInstanceManagers) {
@@ -1561,7 +1587,41 @@
 
         // PERFORMANCE: Cache for EdgeGeometries so we don't re-calculate them every frame on hover
         const bedEdgeCache = new Map();
-        const bedOutlineMat = new THREE.LineBasicMaterial({ color: 0x1a2e4a, linewidth: 2 });
+
+        // Branded Gradient Material for hitboxes
+        const bedOutlineMat = new THREE.ShaderMaterial({
+            uniforms: {
+                color1: { value: new THREE.Color(0x3b82f6) }, // Blue
+                color2: { value: new THREE.Color(0x06b6d4) }, // Teal
+                color3: { value: new THREE.Color(0x84cc16) }  // Green
+            },
+            vertexShader: `
+                varying vec3 vPos;
+                void main() {
+                    vPos = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vPos;
+                uniform vec3 color1;
+                uniform vec3 color2;
+                uniform vec3 color3;
+                void main() {
+                    // Create a diagonal gradient effect based on local coordinates
+                    float t = clamp((vPos.x + vPos.y + vPos.z) * 0.3 + 0.5, 0.0, 1.0);
+                    vec3 color;
+                    if(t < 0.5) {
+                        color = mix(color1, color2, t * 2.0);
+                    } else {
+                        color = mix(color2, color3, (t - 0.5) * 2.0);
+                    }
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `,
+            transparent: true,
+            depthWrite: false
+        });
 
         // PERFORMANCE: Throttle for mouse move (run at ~30 FPS instead of device refresh rate)
         let lastMoveTime = 0;
@@ -1675,8 +1735,6 @@
 
             // Ignore clicks on UI elements (only react to canvas clicks)
             if (event.target !== renderer.domElement) return;
-            // Ignore if it was a drag/pan gesture
-            if (wasDragged(event.clientX, event.clientY)) return;
 
             console.log("Click Event:", {
                 selectedPlant: selectedPlantForPlanting?.name,
@@ -1788,7 +1846,7 @@
             // Update interaction panel
             document.getElementById('interaction-title').textContent = data.title;
             const panel = document.getElementById('interaction-panel');
-            panel.classList.remove('minimized');
+            panel.classList.add('minimized'); // Default to closed/minimized
             panel.classList.add('visible');
 
             // Log the bed name so user can add it to bedData
@@ -1807,7 +1865,8 @@
             gsap.to(camera.position, {
                 x: targetPos.x, y: targetPos.y, z: targetPos.z,
                 duration: 1.5,
-                ease: "power2.inOut"
+                ease: "power2.inOut",
+                onUpdate: requestRender
             });
 
             // Animate controls target to look at the bed
@@ -1815,6 +1874,7 @@
                 x: bed.position.x, y: bed.position.y, z: bed.position.z,
                 duration: 1.5,
                 ease: "power2.inOut",
+                onUpdate: requestRender,
                 onComplete: () => {
                     document.getElementById('top-bar').style.opacity = '0';
                     document.getElementById('back-btn').style.display = 'flex';
@@ -1822,6 +1882,24 @@
                     document.getElementById('title').style.display = 'none';
                     document.getElementById('instruction').style.display = 'none';
                     controls.enabled = true;
+
+                    // Show branded outline on the focused bed (essential for mobile)
+                    if (currentOutline) {
+                        currentOutline.parent.remove(currentOutline);
+                        currentOutline = null;
+                    }
+                    if (!bedEdgeCache.has(bed.id)) {
+                        bedEdgeCache.set(bed.id, new THREE.EdgesGeometry(bed.geometry, 15));
+                    }
+                    const edges = bedEdgeCache.get(bed.id);
+                    currentOutline = new THREE.LineSegments(edges, bedOutlineMat);
+                    currentOutline.userData.bedId = bed.id;
+                    currentOutline.position.copy(bed.position);
+                    currentOutline.rotation.copy(bed.rotation);
+                    currentOutline.scale.copy(bed.scale);
+                    bed.parent.add(currentOutline);
+
+                    if (typeof requestRender === 'function') requestRender();
                     console.log(`Zoomed into Bed #${bed.userData.id}`);
                 }
             });
@@ -1844,6 +1922,12 @@
             panel.classList.remove('harvest-mode');
             highlightBox.visible = false;
 
+            // Remove outline if exists
+            if (currentOutline) {
+                currentOutline.parent.remove(currentOutline);
+                currentOutline = null;
+            }
+
             // Disable controls during animation
             controls.enabled = false;
 
@@ -1851,13 +1935,15 @@
             gsap.to(camera.position, {
                 x: 0, y: 20, z: 30,
                 duration: 1.5,
-                ease: "power2.inOut"
+                ease: "power2.inOut",
+                onUpdate: requestRender
             });
 
             gsap.to(controls.target, {
                 x: 0, y: 0, z: 0,
                 duration: 1.5,
                 ease: "power2.inOut",
+                onUpdate: requestRender,
                 onComplete: () => {
                     controls.enabled = true;
                 }
