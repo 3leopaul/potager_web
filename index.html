@@ -832,7 +832,8 @@
             position: fixed;
             top: 24px;
             right: 24px;
-            background: rgba(34, 81, 152, 0.98); /* Brand Navy */
+            background: rgba(34, 81, 152, 0.98);
+            /* Brand Navy */
             color: white;
             padding: 24px;
             border-radius: 20px;
@@ -915,6 +916,7 @@
                 max-width: none;
                 transform: translateY(150%);
             }
+
             #info-toast.visible {
                 transform: translateY(0);
             }
@@ -1133,7 +1135,14 @@
         scene.background = new THREE.Color(0xffffff);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 20, 30);
+
+        // Mobile-specific initial zoom
+        const isMobile = window.innerWidth <= 600;
+        if (isMobile) {
+            camera.position.set(-65, 45, 0);
+        } else {
+            camera.position.set(0, 20, 30);
+        }
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1221,7 +1230,7 @@
         };
 
         const plantsData = [
-            { 
+            {
                 id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1, spacing: 0.6,
                 category: 'vegetable',
                 info: {
@@ -1230,7 +1239,7 @@
                     tips: "Semez une petite pincée de graines tous les 15 jours pour avoir des radis frais tout au long de la saison !"
                 }
             },
-            { 
+            {
                 id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0, spacing: 0.8,
                 category: 'vegetable',
                 info: {
@@ -1239,7 +1248,7 @@
                     tips: "Retirez avec vos doigts les petites tiges qui poussent à la jonction des feuilles : cela aide les tomates à devenir plus grosses."
                 }
             },
-            { 
+            {
                 id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3, spacing: 0.6,
                 category: 'vegetable',
                 info: {
@@ -1248,7 +1257,7 @@
                     tips: "Laissez bien 20cm entre chaque salade. Si elles sont trop serrées, elles n'auront pas la place de bien pousser."
                 }
             },
-            { 
+            {
                 id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0, spacing: 0.9,
                 category: 'vegetable',
                 info: {
@@ -1257,7 +1266,7 @@
                     tips: "Coupez les feuilles une par une selon vos besoins en cuisine, de nouvelles feuilles repousseront rapidement !"
                 }
             },
-            { 
+            {
                 id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0, spacing: 0.9,
                 category: 'herb',
                 info: {
@@ -1266,7 +1275,7 @@
                     tips: "Coupez les petites fleurs dès qu'elles apparaissent au sommet. Si vous les laissez, le basilic perdra son parfum."
                 }
             },
-            { 
+            {
                 id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1, spacing: 0.6,
                 category: 'vegetable',
                 info: {
@@ -1275,7 +1284,7 @@
                     tips: "N'arrosez presque jamais ! L'ail déteste avoir les racines trop mouillées, cela risque de faire pourrir le bulbe."
                 }
             },
-            { 
+            {
                 id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15, spacing: 0.6,
                 category: 'vegetable',
                 info: {
@@ -1284,7 +1293,7 @@
                     tips: "Quand les feuilles commencent à jaunir en fin d'été, couchez-les au sol pour forcer l'oignon à bien gonfler."
                 }
             },
-            { 
+            {
                 id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1, spacing: 0.6,
                 category: 'herb',
                 info: {
@@ -1293,7 +1302,7 @@
                     tips: "Mettez les graines dans un verre d'eau toute la nuit avant de les planter : elles sortiront de terre bien plus vite !"
                 }
             },
-            { 
+            {
                 id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0, spacing: 0.6,
                 category: 'vegetable',
                 info: {
@@ -1338,7 +1347,7 @@
 
             const toast = document.getElementById('info-toast');
             const title = actionType === 'planting' ? `Conseil de culture : ${plant.name}` : `Récolte de : ${plant.name}`;
-            
+
             document.getElementById('toast-icon').textContent = plant.icon;
             document.getElementById('toast-title').textContent = title;
             document.getElementById('toast-desc').textContent = plant.info.tips || plant.description;
@@ -1714,7 +1723,8 @@
             if (event.touches.length > 0) return;
             const touch = event.changedTouches[0];
 
-            // Removed wasDragged check as requested to allow immediate click
+            // Ignore if we were dragging (panning camera)
+            if (wasDragged(touch.clientX, touch.clientY)) return;
 
             mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
@@ -1942,6 +1952,9 @@
             // Ignore clicks on UI elements (only react to canvas clicks)
             if (event.target !== renderer.domElement) return;
 
+            // Ignore if we were dragging (orbiting camera)
+            if (wasDragged(event.clientX, event.clientY)) return;
+
             console.log("Click Event:", {
                 selectedPlant: selectedPlantForPlanting?.name,
                 currentBed: currentZoomedBed?.name
@@ -2058,10 +2071,11 @@
             // Log the bed name so user can add it to bedData
             console.log(`Clicked on bed: "${bed.name}" - Add this to bedData if needed`);
 
+            const isMobileView = window.innerWidth <= 600;
             const targetPos = {
                 x: bed.position.x,
-                y: bed.position.y + 3,
-                z: bed.position.z + 2
+                y: bed.position.y + (isMobileView ? 10 : 3),
+                z: bed.position.z + (isMobileView ? 7 : 2)
             };
 
             // Disable controls during animation
@@ -2121,7 +2135,8 @@
             document.getElementById('instruction').style.display = 'block';
             document.getElementById('instruction').textContent = "Cliquez sur un bac pour l'explorer";
 
-            // Hide interaction panel
+            // Hide interaction panel and toasts
+            document.getElementById('info-toast').classList.remove('visible');
             const panel = document.getElementById('interaction-panel');
             panel.classList.remove('visible');
             panel.classList.remove('minimized');
@@ -2137,9 +2152,12 @@
             // Disable controls during animation
             controls.enabled = false;
 
-            // Animate back to overview
+            // Animate back to overview (mobile-aware zoom & angle)
+            const isMobile = window.innerWidth <= 600;
             gsap.to(camera.position, {
-                x: 0, y: 20, z: 30,
+                x: isMobile ? -65 : 0,
+                y: isMobile ? 45 : 20,
+                z: isMobile ? 0 : 30,
                 duration: 1.5,
                 ease: "power2.inOut",
                 onUpdate: requestRender
@@ -2275,7 +2293,7 @@
             const bedName = currentZoomedBed.name;
             if (!sessionPlantedHistory.has(bedName)) sessionPlantedHistory.set(bedName, new Set());
             const alreadyPlanted = sessionPlantedHistory.get(bedName);
-            
+
             if (!alreadyPlanted.has(plant.id) && (plant.category === 'vegetable' || plant.category === 'herb')) {
                 showPlantInfo(plant, "planting");
                 alreadyPlanted.add(plant.id);
