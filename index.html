@@ -441,6 +441,54 @@
             }
         }
 
+        /* ========== SWITCH UI ========== */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--white);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--green-primary), var(--green-accent));
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
         /* ========== INTERACTION PANEL ========== */
         #interaction-panel {
             position: fixed;
@@ -800,6 +848,27 @@
                 <span class="nav-icon">ℹ️</span>
                 À Propos
             </a>
+
+            <div class="nav-label">Sauvegarde</div>
+            <a class="nav-item" id="nav-export" onclick="exportPotager()">
+                <span class="nav-icon">📤</span>
+                Exporter (.json)
+            </a>
+            <a class="nav-item" id="nav-import" onclick="document.getElementById('import-input').click()">
+                <span class="nav-icon">📥</span>
+                Importer (.json)
+            </a>
+            <input type="file" id="import-input" accept=".json" style="display: none;" onchange="importPotager(event)">
+
+            <div class="nav-label">Configuration</div>
+            <div class="nav-item no-hover" style="cursor: default;">
+                <span class="nav-icon">🗺️</span>
+                <span style="flex: 1;">Plan Rempli</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-filled-plan" onchange="toggleFilledPlan(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
         <div class="sidebar-footer">
             Fait avec 💚 par Devinci Durable
@@ -891,6 +960,14 @@
                 <div class="btn-content">
                     <span class="btn-title">Planter</span>
                     <span class="btn-subtitle">Ajouter une culture</span>
+                </div>
+            </button>
+            <button class="interaction-btn" id="btn-fill"
+                style="border-color: var(--blue-accent); background: rgba(74, 159, 214, 0.1);">
+                <span class="btn-icon">🚜</span>
+                <div class="btn-content">
+                    <span class="btn-title">Remplir le bac</span>
+                    <span class="btn-subtitle">Planter en grille</span>
                 </div>
             </button>
         </div>
@@ -1018,31 +1095,31 @@
         };
 
         const plantsData = [
-            { id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1 },
-            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0 },
-            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3 },
-            { id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0 },
-            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0 },
-            { id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1 },
-            { id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15 },
-            { id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1 },
-            { id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0 },
-            { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0 },
-            { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0 },
-            { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0 },
-            { id: 'pine_tree', name: 'Grand Sapin', model: './3dModels/plants/pine_tree.glb', icon: '🌲', description: 'Idéal pour le HitBox_12', scale: 0.02, yOffset: -0.1 },
+            { id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1, spacing: 0.6 },
+            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0, spacing: 0.8 },
+            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3, spacing: 0.6 },
+            { id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0, spacing: 0.9 },
+            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0, spacing: 0.9 },
+            { id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1, spacing: 0.6 },
+            { id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15, spacing: 0.6 },
+            { id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1, spacing: 0.6 },
+            { id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0, spacing: 0.6 },
+            { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0, spacing: 0.6 },
+            { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0, spacing: 0.6 },
+            { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0, spacing: 0.6 },
+            { id: 'pine_tree', name: 'Grand Sapin', model: './3dModels/plants/pine_tree.glb', icon: '🌲', description: 'Idéal pour le HitBox_12', scale: 0.02, yOffset: -0.1, spacing: 2.0 },
             // Random mix entry
-            { id: 'flowers_mix', name: 'Mélange de Fleurs', icon: '🌸', description: 'Un mélange aléatoire de fleurs colorées.', isMix: true, subTypes: ['flower1', 'flower2', 'flower3'] },
+            { id: 'flowers_mix', name: 'Mélange de Fleurs', icon: '🌸', description: 'Un mélange aléatoire de fleurs colorées.', isMix: true, subTypes: ['flower1', 'flower2', 'flower3'], spacing: 0.3 },
             // Individual flower sub-types (hidden from grid)
-            { id: 'flower1', model: './3dModels/plants/flowers1.glb', scale: 0.05, isHidden: true },
-            { id: 'flower2', model: './3dModels/plants/flowers2.glb', scale: 0.02, isHidden: true },
-            { id: 'flower3', model: './3dModels/plants/flowers3.glb', scale: 0.02, isHidden: true }
+            { id: 'flower1', model: './3dModels/plants/flowers1.glb', scale: 0.05, isHidden: true, spacing: 0.2 },
+            { id: 'flower2', model: './3dModels/plants/flowers2.glb', scale: 0.02, isHidden: true, spacing: 0.2 },
+            { id: 'flower3', model: './3dModels/plants/flowers3.glb', scale: 0.02, isHidden: true, spacing: 0.2 }
         ];
 
         // --- PERFORMANCE OPTIMIZATION: INSTANCING ---
         // We cache the raw GLTF scene data so models are only fetched from the network once.
         // InstancedMesh GPU resources are only allocated LAZILY on first use.
-        const MAX_INSTANCES_PER_PLANT = 100; // plenty for a garden bed
+        const MAX_INSTANCES_PER_PLANT = 200; // supports very large/dense garden beds
         const plantGltfCache = {};       // raw gltf.scene, keyed by plant.id
         const plantInstanceManagers = {}; // initialized lazily on first planting
 
@@ -1238,6 +1315,17 @@
                     }
                 });
             }
+
+            clear() {
+                this.instances = [];
+                this.count = 0;
+                this.instancedMeshes.forEach(m => {
+                    m.count = 0;
+                    m.instanceMatrix.needsUpdate = true;
+                });
+                this.hitboxMesh.count = 0;
+                this.hitboxMesh.instanceMatrix.needsUpdate = true;
+            }
         }
 
         const dracoLoader = new DRACOLoader();
@@ -1322,6 +1410,7 @@
         let currentZoomedBed = null;
         let selectedPlantForPlanting = null;
         let isHarvesting = false;
+        let isFillingMode = false;
 
         import { gsap } from 'https://cdn.skypack.dev/gsap';
 
@@ -1397,6 +1486,42 @@
         const highlightBox = new THREE.LineSegments(highlightGeo, highlightMat);
         highlightBox.visible = false;
         scene.add(highlightBox);
+
+        /**
+         * Robustly finds the y-elevation of the garden surface at a given (x, z) coord.
+         * Scans down from high above, filtering out hitboxes, helpers, and plants.
+         */
+        function getSoilElevation(wx, wz, bedName) {
+            // Special handling for flat zones
+            if (bedData[bedName]?.isFlat) return 0;
+
+            const snapRay = new THREE.Raycaster();
+            const rayOrigin = new THREE.Vector3(wx, 100, wz);
+            const rayDir = new THREE.Vector3(0, -1, 0);
+            snapRay.set(rayOrigin, rayDir);
+
+            const snapIntersects = snapRay.intersectObjects(scene.children, true);
+            if (snapIntersects.length > 0) {
+                const validHit = snapIntersects.find(hit => {
+                    const name = (hit.object.name || "").toLowerCase();
+                    const isHitBox = name.includes("hitbox");
+
+                    // Check if the hit object or ANY of its parents are a plant
+                    let isPlant = false;
+                    hit.object.traverseAncestors(a => { if (a.userData.isPlant) isPlant = true; });
+                    if (hit.object.userData.isPlant) isPlant = true;
+
+                    const isHelper = hit.object.type === "LineSegments" || hit.object.type === "Line";
+
+                    // Heuristic: identify environment meshes that should NOT be planted on
+                    const isGround = name.includes("ground") || name.includes("grass") || name.includes("herbe") || name.includes("sol") || name.includes("landscape") || name.includes("plane");
+
+                    return !isHitBox && !isPlant && !isHelper && !isGround;
+                });
+                return validHit ? validHit.point.y : null;
+            }
+            return null;
+        }
 
         function onMouseMove(event) {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -1525,46 +1650,15 @@
 
                     console.log(`Initial hit at: x=${hitPoint.x.toFixed(2)}, y=${hitPoint.y.toFixed(2)}, z=${hitPoint.z.toFixed(2)}`);
 
-                    // NEW: Snap to actual soil geometry (ignoring hitboxes and other plants)
-                    const snapRay = new THREE.Raycaster();
-                    // Start from very high up to ensure we catch all geometry
-                    const rayOrigin = new THREE.Vector3(hitPoint.x, 100, hitPoint.z);
-                    const rayDir = new THREE.Vector3(0, -1, 0);
-                    snapRay.set(rayOrigin, rayDir);
-
-                    // Intersect with everything in the scene
-                    const snapIntersects = snapRay.intersectObjects(scene.children, true);
+                    // Snap to actual soil geometry
+                    const soilY = getSoilElevation(hitPoint.x, hitPoint.z, currentZoomedBed.name);
                     let finalPlantPos = hitPoint.clone();
 
-                    if (bedData[currentZoomedBed.name]?.isFlat) {
-                        console.log(`[FLAT PLACEMENT] Setting y=0 for ${currentZoomedBed.name}`);
-                        finalPlantPos.y = 0;
-                    } else if (snapIntersects.length > 0) {
-                        // Find the highest point that is NOT a hitbox, NOT a plant, and NOT the background/lines
-                        const validHit = snapIntersects.find(hit => {
-                            const name = (hit.object.name || "").toLowerCase();
-                            const isHitBox = name.includes("hitbox");
-
-                            // Check if the hit object or ANY of its parents are a plant
-                            let isPlant = false;
-                            hit.object.traverseAncestors(a => { if (a.userData.isPlant) isPlant = true; });
-                            if (hit.object.userData.isPlant) isPlant = true;
-
-                            const isHelper = hit.object.type === "LineSegments" || hit.object.type === "Line";
-
-                            // Heuristic: identify environment meshes that should NOT be planted on
-                            const isGround = name.includes("ground") || name.includes("grass") || name.includes("herbe") || name.includes("sol") || name.includes("landscape") || name.includes("plane");
-
-                            return !isHitBox && !isPlant && !isHelper && !isGround;
-                        });
-
-                        if (validHit) {
-                            console.log(`Snapped to ${validHit.object.name} at y=${validHit.point.y.toFixed(2)}`);
-                            finalPlantPos.y = validHit.point.y;
-                        } else {
-                            console.warn("Could not find a valid garden surface at this location. (Click might be outside the box meshes?)");
-                            return; // REJECT planting if no valid garden surface found
-                        }
+                    if (soilY !== null) {
+                        finalPlantPos.y = soilY;
+                    } else if (!bedData[currentZoomedBed.name]?.isFlat) {
+                        console.warn("Could not find a valid garden surface at this location.");
+                        return;
                     }
 
                     let finalPlantToPlant = selectedPlantForPlanting;
@@ -1773,8 +1867,14 @@
                     </div>
                 `;
                 card.onclick = () => {
-                    selectedPlantForPlanting = plant;
                     closePlantModal();
+
+                    if (isFillingMode) {
+                        fillBedWithGrid(plant);
+                        return;
+                    }
+
+                    selectedPlantForPlanting = plant;
                     // Feedback for planting mode
                     document.getElementById('interaction-subtitle').textContent = `Plante sélectionnée : ${plant.name}`;
                     document.getElementById('instruction').textContent = `Cliquez dans le bac pour planter : ${plant.name}`;
@@ -1795,7 +1895,7 @@
             document.getElementById('plant-modal').classList.remove('visible');
         };
 
-        function plantSeed(plant, position) {
+        function plantSeed(plant, position, forcedRotationY = null) {
             if (!currentZoomedBed) {
                 console.error("Planting failed: No bed selected.");
                 return;
@@ -1814,7 +1914,9 @@
 
             const manager = plantInstanceManagers[plant.id];
             const targetScale = plant.scale || 1.0;
-            const rotationY = Math.random() * Math.PI * 2;
+
+            // Use forced rotation (from Fill Box) or random rotation
+            const rotationY = (forcedRotationY !== null) ? forcedRotationY : (Math.random() * Math.PI * 2);
 
             manager.addInstance(position, rotationY, targetScale);
 
@@ -1822,6 +1924,100 @@
                 `x:${position.x.toFixed(2)}, y:${position.y.toFixed(2)}, z:${position.z.toFixed(2)}`
 
             );
+        }
+
+        function fillBedWithGrid(plantConfig) {
+            if (!currentZoomedBed) return;
+
+            // 1. Get world transform
+            currentZoomedBed.updateMatrixWorld(true);
+            const worldMatrix = currentZoomedBed.matrixWorld;
+            const worldQuat = new THREE.Quaternion();
+            const worldPos = new THREE.Vector3();
+            const worldScale = new THREE.Vector3();
+            worldMatrix.decompose(worldPos, worldQuat, worldScale);
+
+            // 2. AUTO-DETECT ORIENTATION (Handles baked rotations)
+            // We find the first horizontal face normal to determine the box's primary axes
+            const normalsAttr = currentZoomedBed.geometry.attributes.normal;
+            let worldRight = new THREE.Vector3(1, 0, 0);
+            if (normalsAttr) {
+                for (let i = 0; i < normalsAttr.count; i++) {
+                    const normal = new THREE.Vector3().fromBufferAttribute(normalsAttr, i);
+                    normal.applyQuaternion(worldQuat).normalize();
+                    // If the normal is roughly horizontal, it aligns with a box side
+                    if (Math.abs(normal.y) < 0.1) {
+                        worldRight.copy(normal);
+                        break;
+                    }
+                }
+            }
+            // Derive Forward axis (orthogonal to Up and Right)
+            const worldUp = new THREE.Vector3(0, 1, 0);
+            const worldForward = new THREE.Vector3().crossVectors(worldUp, worldRight).normalize();
+
+            // 3. PROJECT VERTICES to find the bounds along these detected axes
+            const posAttr = currentZoomedBed.geometry.attributes.position;
+            let minR = Infinity, maxR = -Infinity;
+            let minF = Infinity, maxF = -Infinity;
+            let maxY = -Infinity;
+
+            for (let i = 0; i < posAttr.count; i++) {
+                const v = new THREE.Vector3().fromBufferAttribute(posAttr, i).applyMatrix4(worldMatrix);
+                const dotR = v.dot(worldRight);
+                const dotF = v.dot(worldForward);
+                minR = Math.min(minR, dotR); maxR = Math.max(maxR, dotR);
+                minF = Math.min(minF, dotF); maxF = Math.max(maxF, dotF);
+                maxY = Math.max(maxY, v.y);
+            }
+
+            // 4. Grid Parameters
+            const spacing = plantConfig.spacing || 0.3;
+            const borderPadding = 0.15;
+            const inset = (spacing / 2) + borderPadding;
+
+            // Base rotation for plants (aligned with the detected 'Right' axis)
+            const baseRotationY = Math.atan2(worldRight.x, worldRight.z) + Math.PI / 2 + 30;
+
+            // 5. Iterate in OBB space
+            let count = 0;
+            const maxPlants = 3000; // supports filling very large beds with small plants
+
+            for (let r = minR + inset; r <= maxR - inset; r += spacing) {
+                for (let f = minF + inset; f <= maxF - inset; f += spacing) {
+                    if (count >= maxPlants) break;
+
+                    // Reconstruct world point from projections
+                    // We start from world origin and move along the detected axes
+                    const worldPoint = new THREE.Vector3(0, 0, 0)
+                        .addScaledVector(worldRight, r)
+                        .addScaledVector(worldForward, f);
+
+                    // We need to keep the world XZ and find correct Y
+                    const soilY = getSoilElevation(worldPoint.x, worldPoint.z, currentZoomedBed.name);
+
+                    if (soilY !== null) {
+                        const finalPos = new THREE.Vector3(worldPoint.x, soilY, worldPoint.z);
+
+                        let finalPlantToPlant = plantConfig;
+                        if (plantConfig.isMix) {
+                            const randomId = plantConfig.subTypes[Math.floor(Math.random() * plantConfig.subTypes.length)];
+                            finalPlantToPlant = plantsData.find(p => p.id === randomId);
+                        }
+
+                        // Organic variation
+                        const finalRotY = baseRotationY + (Math.random() - 0.5) * 0.4;
+                        const jitterAmt = spacing * 0.15;
+                        finalPos.addScaledVector(worldRight, (Math.random() - 0.5) * jitterAmt);
+                        finalPos.addScaledVector(worldForward, (Math.random() - 0.5) * jitterAmt);
+
+                        plantSeed(finalPlantToPlant, finalPos, finalRotY);
+                        count++;
+                    }
+                }
+                if (count >= maxPlants) break;
+            }
+            console.log(`Filled ${currentZoomedBed.name} with ${count} ${plantConfig.name}. Detected Axes: R(${worldRight.x.toFixed(2)},${worldRight.z.toFixed(2)}) F(${worldForward.x.toFixed(2)},${worldForward.z.toFixed(2)})`);
         }
 
         // Interaction Panel Button Handlers
@@ -1880,6 +2076,13 @@
 
         document.getElementById('btn-plant').addEventListener('click', () => {
             setHarvestMode(false); // Turn off harvesting if planting
+            isFillingMode = false;
+            openPlantModal();
+        });
+
+        document.getElementById('btn-fill').addEventListener('click', () => {
+            setHarvestMode(false);
+            isFillingMode = true;
             openPlantModal();
         });
 
@@ -1890,6 +2093,137 @@
             renderer.render(scene, camera);
         }
         animate();
+
+        // Export / Import Functionality
+        window.exportPotager = function () {
+            const exportData = [];
+            for (const plantId in plantInstanceManagers) {
+                const manager = plantInstanceManagers[plantId];
+                if (manager.instances.length > 0) {
+                    exportData.push({
+                        id: plantId,
+                        instances: manager.instances.map(inst => ({
+                            pos: [inst.position.x, inst.position.y, inst.position.z],
+                            rot: inst.rotationY,
+                            scale: inst.targetScale
+                        }))
+                    });
+                }
+            }
+
+            if (exportData.length === 0) {
+                alert("Rien à exporter : votre potager est vide !");
+                return;
+            }
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `potager_plan_${dateStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            console.log("Plan exporté !");
+        };
+
+        function loadPlanData(data, confirmClear = true) {
+            try {
+                if (!Array.isArray(data)) throw new Error("Format JSON invalide (doit être un tableau)");
+
+                if (confirmClear) {
+                    const shouldClear = confirm("Souhaitez-vous EFFACER le potager actuel avant d'importer ?");
+                    if (shouldClear) {
+                        for (const id in plantInstanceManagers) {
+                            plantInstanceManagers[id].clear();
+                        }
+                    }
+                }
+
+                let importedCount = 0;
+                data.forEach(plantType => {
+                    const plantConfig = plantsData.find(p => p.id === plantType.id);
+                    if (!plantConfig) {
+                        console.warn(`Type de plante inconnu : ${plantType.id}`);
+                        return;
+                    }
+
+                    // Ensure manager exists
+                    if (!plantInstanceManagers[plantType.id]) {
+                        const cachedScene = plantGltfCache[plantType.id];
+                        if (!cachedScene) {
+                            console.error(`GLTF cache miss for ${plantType.id}`);
+                            return;
+                        }
+                        plantInstanceManagers[plantType.id] = new PlantInstanceManager(plantConfig, cachedScene);
+                    }
+
+                    const manager = plantInstanceManagers[plantType.id];
+                    plantType.instances.forEach(inst => {
+                        const position = new THREE.Vector3(inst.pos[0], inst.pos[1], inst.pos[2]);
+                        manager.addInstance(position, inst.rot || 0, inst.scale || 1.0);
+                        importedCount++;
+                    });
+                });
+
+                return importedCount;
+            } catch (err) {
+                console.error("Erreur lors du chargement des données :", err);
+                throw err;
+            }
+        }
+
+        window.importPotager = function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const count = loadPlanData(data, true);
+                    alert(`Potager importé avec succès ! (${count} plantes)`);
+                } catch (err) {
+                    alert(`Erreur d'importation : ${err.message}`);
+                }
+                event.target.value = ''; // Reset input
+            };
+            reader.readAsText(file);
+        };
+
+        window.toggleFilledPlan = function (checkbox) {
+            if (checkbox.checked) {
+                // Fetch the specific file requested by the user
+                fetch('./potager_plan_filled.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error("Fichier 'potager_plan_filled.json' non trouvé.");
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Clear without asking for smoother UX when using a toggle? 
+                        // Actually, let's just use the shared logic.
+                        const count = loadPlanData(data, true);
+                        if (count > 0) {
+                            console.log(`Plan filled chargé : ${count} plantes.`);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Erreur toggle plan :", err);
+                        alert(err.message);
+                        checkbox.checked = false;
+                    });
+            } else {
+                // Optional: Clear or just leave as is?
+                // For a "toggle", users often expect it to undo.
+                if (confirm("Désactiver le plan et vider le potager ?")) {
+                    for (const id in plantInstanceManagers) {
+                        plantInstanceManagers[id].clear();
+                    }
+                } else {
+                    checkbox.checked = true;
+                }
+            }
+        };
 
         // Handle window resize
         window.addEventListener('resize', () => {
