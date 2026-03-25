@@ -826,6 +826,99 @@
             font-size: 12px;
             color: var(--text-muted);
         }
+
+        /* ========== INFO TOAST ========== */
+        #info-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: rgba(34, 81, 152, 0.98); /* Brand Navy */
+            color: white;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+            border-left: 6px solid var(--green-logo);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            max-width: 420px;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(120%);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            backdrop-filter: blur(12px);
+        }
+
+        #info-toast.visible {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .toast-icon {
+            font-size: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            min-width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-content h4 {
+            font-size: 19px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: var(--white);
+        }
+
+        .toast-content p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 12px;
+        }
+
+        .toast-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .toast-tag {
+            background: rgba(132, 204, 22, 0.2);
+            color: var(--green-logo);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .toast-tag.blue {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        @media (max-width: 600px) {
+            #info-toast {
+                top: auto;
+                bottom: 100px;
+                right: 16px;
+                left: 16px;
+                max-width: none;
+                transform: translateY(150%);
+            }
+            #info-toast.visible {
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -1009,6 +1102,19 @@
         </div>
     </div>
 
+    <!-- INFO TOAST -->
+    <div id="info-toast">
+        <div class="toast-icon" id="toast-icon">🍅</div>
+        <div class="toast-content">
+            <h4 id="toast-title">Plante</h4>
+            <p id="toast-desc">Informations sur la plante.</p>
+            <div class="toast-meta">
+                <span class="toast-tag" id="toast-season">Saison</span>
+                <span class="toast-tag blue" id="toast-where">Emplacement</span>
+            </div>
+        </div>
+    </div>
+
     <script type="importmap">
         {
             "imports": {
@@ -1115,25 +1221,95 @@
         };
 
         const plantsData = [
-            { id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1, spacing: 0.6 },
-            { id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0, spacing: 0.8 },
-            { id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3, spacing: 0.6 },
-            { id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0, spacing: 0.9 },
-            { id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0, spacing: 0.9 },
-            { id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1, spacing: 0.6 },
-            { id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15, spacing: 0.6 },
-            { id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1, spacing: 0.6 },
-            { id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0, spacing: 0.6 },
-            { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0, spacing: 0.6 },
-            { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0, spacing: 0.6 },
-            { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0, spacing: 0.6 },
-            { id: 'pine_tree', name: 'Grand Sapin', model: './3dModels/plants/pine_tree.glb', icon: '🌲', description: 'Idéal pour le HitBox_12', scale: 0.02, yOffset: -0.1, spacing: 2.0 },
-            // Random mix entry
-            { id: 'flowers_mix', name: 'Mélange de Fleurs', icon: '🌸', description: 'Un mélange aléatoire de fleurs colorées.', isMix: true, subTypes: ['flower1', 'flower2', 'flower3'], spacing: 0.3 },
-            // Individual flower sub-types (hidden from grid)
-            { id: 'flower1', model: './3dModels/plants/flowers1.glb', scale: 0.05, isHidden: true, spacing: 0.2 },
-            { id: 'flower2', model: './3dModels/plants/flowers2.glb', scale: 0.02, isHidden: true, spacing: 0.2 },
-            { id: 'flower3', model: './3dModels/plants/flowers3.glb', scale: 0.02, isHidden: true, spacing: 0.2 }
+            { 
+                id: 'radish', name: 'Radis', model: './3dModels/plants/plant_radish.glb', icon: '🌱', description: 'Croquant et frais', scale: 0.13, yOffset: -0.1, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Sol léger et frais, sans cailloux.",
+                    season: "Mars à Septembre.",
+                    tips: "Semez une petite pincée de graines tous les 15 jours pour avoir des radis frais tout au long de la saison !"
+                }
+            },
+            { 
+                id: 'tomato', name: 'Tomate', model: './3dModels/plants/plant_tomato.glb', icon: '🍅', description: 'Belles tomates rouges', scale: 1.0, spacing: 0.8,
+                category: 'vegetable',
+                info: {
+                    where: "Ensoleillé, sol riche et bien drainé.",
+                    season: "Avril à Juin.",
+                    tips: "Retirez avec vos doigts les petites tiges qui poussent à la jonction des feuilles : cela aide les tomates à devenir plus grosses."
+                }
+            },
+            { 
+                id: 'lettuce', name: 'Laitue', model: './3dModels/plants/lettuce_plant.glb', icon: '🥗', description: 'Feuilles fraîches et croquantes', scale: 0.3, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Mi-ombre en été, sol frais.",
+                    season: "Février à Septembre.",
+                    tips: "Laissez bien 20cm entre chaque salade. Si elles sont trop serrées, elles n'auront pas la place de bien pousser."
+                }
+            },
+            { 
+                id: 'spinach', name: 'Épinards', model: './3dModels/plants/sprout1.glb', icon: '🥬', description: 'Riches en fer et vitamines', scale: 1.0, spacing: 0.9,
+                category: 'vegetable',
+                info: {
+                    where: "Sol riche, frais et ombragé en été.",
+                    season: "Mars-Avril ou Août-Septembre.",
+                    tips: "Coupez les feuilles une par une selon vos besoins en cuisine, de nouvelles feuilles repousseront rapidement !"
+                }
+            },
+            { 
+                id: 'basil', name: 'Basilic', model: './3dModels/plants/sprout1.glb', icon: '🍃', description: 'Arôme de Provence', scale: 1.0, spacing: 0.9,
+                category: 'herb',
+                info: {
+                    where: "Chaud et ensoleillé, craint le gel.",
+                    season: "Mai à Juin.",
+                    tips: "Coupez les petites fleurs dès qu'elles apparaissent au sommet. Si vous les laissez, le basilic perdra son parfum."
+                }
+            },
+            { 
+                id: 'garlic', name: 'Ail', model: './3dModels/plants/garlic_plant.glb', icon: '🧄', description: 'Idéal pour le goût', scale: 0.3, yOffset: -0.1, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Terre bien drainée, exposition dégagée.",
+                    season: "Octobre à Mars.",
+                    tips: "N'arrosez presque jamais ! L'ail déteste avoir les racines trop mouillées, cela risque de faire pourrir le bulbe."
+                }
+            },
+            { 
+                id: 'onion', name: 'Oignon', model: './3dModels/plants/onion_plant.glb', icon: '🧅', description: 'Base de toute cuisine', scale: 0.3, yOffset: -0.15, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Sol léger, pas trop humide.",
+                    season: "Février à Avril.",
+                    tips: "Quand les feuilles commencent à jaunir en fin d'été, couchez-les au sol pour forcer l'oignon à bien gonfler."
+                }
+            },
+            { 
+                id: 'parsley', name: 'Persil', model: './3dModels/plants/parsley_plant.glb', icon: '🌿', description: 'Frais et parfumé', scale: 0.05, xRotation: Math.PI / 2, yOffset: -0.1, spacing: 0.6,
+                category: 'herb',
+                info: {
+                    where: "Mi-ombre, sol frais et riche.",
+                    season: "Mars à Août.",
+                    tips: "Mettez les graines dans un verre d'eau toute la nuit avant de les planter : elles sortiront de terre bien plus vite !"
+                }
+            },
+            { 
+                id: 'broadbeam', name: 'Fèves', model: './3dModels/plants/broad_bean_plant.glb', icon: '🫛', description: 'Légumineuses nourrissantes', scale: 1.0, spacing: 0.6,
+                category: 'vegetable',
+                info: {
+                    where: "Sol lourd et profond.",
+                    season: "Février à Mars.",
+                    tips: "Coupez le haut de la tige dès que les premières fleurs fanent pour éviter que les pucerons noirs ne s'y installent."
+                }
+            },
+            { id: 'plant_big', name: 'Grande Plante', model: './3dModels/plants/big_plant.glb', icon: '🌲', description: 'Idéal pour les coins', scale: 1.0, spacing: 0.6, category: 'tree' },
+            { id: 'plant_med', name: 'Plante Moyenne', model: './3dModels/plants/medium_plant.glb', icon: '🪴', description: 'Plante décorative', scale: 1.0, spacing: 0.6, category: 'flower' },
+            { id: 'plant_small', name: 'Petite Plante', model: './3dModels/plants/small_plant.glb', icon: '🍃', description: 'Petit buisson', scale: 1.0, spacing: 0.6, category: 'flower' },
+            { id: 'pine_tree', name: 'Grand Sapin', model: './3dModels/plants/pine_tree.glb', icon: '🌲', description: 'Idéal pour le HitBox_12', scale: 0.02, yOffset: -0.1, spacing: 2.0, category: 'tree' },
+            { id: 'flowers_mix', name: 'Mélange de Fleurs', icon: '🌸', description: 'Un mélange aléatoire de fleurs colorées.', isMix: true, subTypes: ['flower1', 'flower2', 'flower3'], spacing: 0.3, category: 'flower' },
+            { id: 'flower1', model: './3dModels/plants/flowers1.glb', scale: 0.05, isHidden: true, spacing: 0.2, category: 'flower' },
+            { id: 'flower2', model: './3dModels/plants/flowers2.glb', scale: 0.02, isHidden: true, spacing: 0.2, category: 'flower' },
+            { id: 'flower3', model: './3dModels/plants/flowers3.glb', scale: 0.02, isHidden: true, spacing: 0.2, category: 'flower' }
         ];
 
         // --- PERFORMANCE OPTIMIZATION: INSTANCING ---
@@ -1152,6 +1328,31 @@
         const _snapRay = new THREE.Raycaster();
         const _snapOrigin = new THREE.Vector3();
         const _snapDir = new THREE.Vector3(0, -1, 0);
+
+        // --- PLANTING INFO & TRACKING ---
+        const sessionPlantedHistory = new Map(); // Key: bedName, Value: Set of plantIds
+        let toastTimeout = null;
+
+        function showPlantInfo(plant, actionType) {
+            if (!plant.info) return;
+
+            const toast = document.getElementById('info-toast');
+            const title = actionType === 'planting' ? `Conseil de culture : ${plant.name}` : `Récolte de : ${plant.name}`;
+            
+            document.getElementById('toast-icon').textContent = plant.icon;
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-desc').textContent = plant.info.tips || plant.description;
+            document.getElementById('toast-season').textContent = `📅 ${plant.info.season}`;
+            document.getElementById('toast-where').textContent = `📍 ${plant.info.where}`;
+
+            toast.classList.add('visible');
+
+            // Auto-hide after 8 seconds
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('visible');
+            }, 8000);
+        }
 
         class PlantInstanceManager {
             constructor(plantConfig, cachedScene) {
@@ -1334,6 +1535,11 @@
                 const data = this.instances[index];
                 if (data.isRemoving) return; // Already being harvested
                 data.isRemoving = true;
+
+                // Display info on harvest if it's a vegetable/herb
+                if (this.config.category === 'vegetable' || this.config.category === 'herb') {
+                    showPlantInfo(this.config, "harvest");
+                }
 
                 // Animation out
                 gsap.to(data, {
@@ -2065,9 +2271,18 @@
 
             manager.addInstance(position, rotationY, targetScale);
 
+            // Trigger info Toast for vegetables/herbs on the FIRST plant of this type in this bed
+            const bedName = currentZoomedBed.name;
+            if (!sessionPlantedHistory.has(bedName)) sessionPlantedHistory.set(bedName, new Set());
+            const alreadyPlanted = sessionPlantedHistory.get(bedName);
+            
+            if (!alreadyPlanted.has(plant.id) && (plant.category === 'vegetable' || plant.category === 'herb')) {
+                showPlantInfo(plant, "planting");
+                alreadyPlanted.add(plant.id);
+            }
+
             console.log(`[INSTANCED] ${plant.name} added at:`,
                 `x:${position.x.toFixed(2)}, y:${position.y.toFixed(2)}, z:${position.z.toFixed(2)}`
-
             );
         }
 
