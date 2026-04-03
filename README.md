@@ -169,7 +169,7 @@ potager_web/
 | [Three.js](https://threejs.org/) | 0.160.0 | 3D rendering |
 | [OrbitControls](https://threejs.org/docs/#examples/en/controls/OrbitControls) | 0.160.0 | Camera navigation |
 | [GLTFLoader + DRACOLoader](https://threejs.org/docs/) | 0.160.0 | 3D model loading |
-| [GSAP](https://gsap.com/) | CDN (Skypack) | Animations |
+| [GSAP](https://gsap.com/) | JSDelivr (+ ESM) | Animations |
 | [Google Fonts — Outfit](https://fonts.google.com/specimen/Outfit) | — | Typography |
 
 ---

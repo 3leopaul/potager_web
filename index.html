@@ -1212,7 +1212,8 @@
         {
             "imports": {
                 "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm"
             }
         }
     </script>
@@ -1773,7 +1774,7 @@
         let isHarvesting = false;
         let isFillingMode = false;
 
-        import { gsap } from 'https://cdn.skypack.dev/gsap';
+        import { gsap } from 'gsap';
 
         // Track drag to prevent click after pan/orbit
         let pointerDownPos = { x: 0, y: 0 };
